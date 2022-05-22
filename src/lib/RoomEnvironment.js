@@ -22,16 +22,19 @@ class RoomEnvironment extends Scene {
     const roomMaterial = new MeshStandardMaterial({ side: BackSide });
     const boxMaterial = new MeshStandardMaterial();
 
-    const mainTopLight = new PointLight(0xffffff, 5.0, 28, 2);
+    const mainTopLight = new PointLight(0xffffff, 2.0, 28, 2);
     mainTopLight.position.set(0, 20, -0.4);
+    mainTopLight.castShadow = true;
     this.add(mainTopLight);
 
     const leftLight = new PointLight(0xffffff, 6.0, 20, 2);
     leftLight.position.set(12, 2, -12);
+    leftLight.castShadow = true;
     this.add(leftLight);
 
     const rightLight = new PointLight(0xffffff, 6.0, 20, 2);
     rightLight.position.set(-12, 2, -12);
+    rightLight.castShadow = true;
     this.add(rightLight);
 
     const room = new Mesh(geometry, roomMaterial);

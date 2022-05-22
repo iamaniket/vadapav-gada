@@ -5,15 +5,12 @@
 */
 
 import React from "react";
-import { ACESFilmicToneMapping, AmbientLight, BoxGeometry, PerspectiveCamera, PMREMGenerator, sRGBEncoding } from "three";
-import { MeshLambertMaterial } from "three/src/materials/MeshLambertMaterial";
+import { ACESFilmicToneMapping, AmbientLight, BackSide, CircleGeometry, DirectionalLight, DirectionalLightHelper, DoubleSide, FrontSide, Mesh, MeshBasicMaterial, MeshDepthMaterial, MeshDistanceMaterial, MeshLambertMaterial, MeshPhongMaterial, MeshStandardMaterial, Object3D, PerspectiveCamera, PlaneGeometry, PMREMGenerator, PointLight, PointLightHelper, SpotLight, SpotLightHelper, sRGBEncoding } from "three";
 import { Box3 } from "three/src/math/Box3";
 import { Vector3 } from "three/src/math/Vector3";
-import { Mesh } from "three/src/objects/Mesh";
 import { WebGLRenderer } from "three/src/renderers/WebGLRenderer";
 import { Scene } from "three/src/scenes/Scene";
 import { OrbitControls } from "../lib/OrbitControls.js";
-import { Color } from "three/src/math/Color";
 import { loadModel } from "./ModelLoader";
 import { RoomEnvironment } from "../lib/RoomEnvironment.js";
 
@@ -30,7 +27,70 @@ export class Viewer extends React.Component {
   this.scene = new Scene();
  }
 
+ createSpotLight(position: Vector3, target: Vector3, intencity: number, distance: number) {
+
+  const spotLight = new SpotLight(0xffffff, intencity, distance);
+  spotLight.position.copy(position);
+  this.scene.add(spotLight);
+
+  const targetObject = new Object3D();
+  this.scene.add(targetObject);
+  targetObject.position.copy(target);
+  targetObject.updateMatrix()
+  spotLight.target = targetObject;
+  spotLight.target.updateMatrixWorld();
+
+  const pointLightHelper = new SpotLightHelper(spotLight);
+  this.scene.add(pointLightHelper);
+ }
+
+ thelaBolb() {
+  // Balb inside thela down
+  const thelaBulb = new SpotLight(0xffff00, 5, 500);
+  thelaBulb.position.set(0, 600, 0);
+  this.scene.add(thelaBulb);
+
+  this.createSpotLight(new Vector3(-50, 575, 0), new Vector3(50, 575, 0), 100, 50);
+  this.createSpotLight(new Vector3(50, 575, 0), new Vector3(-50, 575, 0), 100, 50);
+  this.createSpotLight(new Vector3(0, 575, 50), new Vector3(0, 575, -50), 100, 50);
+  this.createSpotLight(new Vector3(0, 575, -50), new Vector3(0, 575, 50), 100, 50);
+
+ }
+
+ streetLight() {
+  const bulb = new SpotLight(0xffffff, 4, 1800);
+  bulb.position.set(-100, 1650, -580);
+  this.scene.add(bulb);
+  const targetObject = new Object3D();
+  this.scene.add(targetObject);
+  targetObject.position.set(-100, 0, -580);
+  targetObject.updateMatrix()
+  bulb.target = targetObject;
+  bulb.target.updateMatrixWorld();
+  this.createSpotLight(new Vector3(-100, 1550, -580), new Vector3(-100, 1850, -580), 100, 100);
+
+  // const pointLightHelper = new SpotLightHelper(bulb);
+  // this.scene.add(pointLightHelper);
+ }
+
+ addBase() {
+  const geometry = new CircleGeometry(1500, 32);
+  geometry.rotateX(Math.PI / 2)
+
+  const material = new MeshStandardMaterial({ color: 0xa86b32, side: BackSide, opacity: 0.5 });
+  const plane = new Mesh(geometry, material);
+  plane.receiveShadow = true;
+  plane.castShadow = true;
+  this.scene.add(plane);
+ }
+
  async componentDidMount() {
+
+  this.addBase();
+
+  // this.thelaBolb();
+  // this.streetLight();
+
 
 
   // const geometry = new BoxGeometry(0.2, 0.2, 0.2);
@@ -38,20 +98,20 @@ export class Viewer extends React.Component {
   // this.scene.add(new Mesh(geometry, material));
 
   const wadaPaav = await loadModel("./model/scene.gltf");
-
+  wadaPaav.scene.castShadow = true;
   this.scene.add(wadaPaav.scene);
 
 
   // Placeholder for light
-  const ambientLight = new AmbientLight(0xffffff);
-  this.scene.add(ambientLight);
+  // const ambientLight = new AmbientLight(0xffffff);
+  // this.scene.add(ambientLight);
 
   this.renderer = new WebGLRenderer({ canvas: document.getElementById("viewer-3d") as HTMLCanvasElement, antialias: true, alpha: true });
   this.renderer.setSize(window.innerWidth, window.innerHeight);
 
   const environment = new RoomEnvironment();
   const pmremGenerator = new PMREMGenerator(this.renderer);
-  // this.scene.environment = pmremGenerator.fromScene(environment).texture;
+  this.scene.environment = pmremGenerator.fromScene(environment).texture;
 
   this.controls = new OrbitControls(this.camera, this.renderer.domElement);
   this.controls.listenToKeyEvents(window); // optional
