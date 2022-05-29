@@ -17,60 +17,17 @@ import { RoomEnvironment } from "../lib/RoomEnvironment.js";
 export class Viewer extends React.Component {
 
  renderer!: WebGLRenderer;
+ phonePosition: Vector3 = new Vector3(60, 310, -365);
  camera: PerspectiveCamera;
  scene: Scene;
  controls: any;
+ isNight = new Date().getHours() < 6 || new Date().getHours() >= 19;
+ /// To add switch for night and dar mode
 
  constructor(props: {}) {
   super(props);
-  this.camera = new PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 5000);
+  this.camera = new PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 10000);
   this.scene = new Scene();
- }
-
- createSpotLight(position: Vector3, target: Vector3, intencity: number, distance: number) {
-
-  const spotLight = new SpotLight(0xffffff, intencity, distance);
-  spotLight.position.copy(position);
-  this.scene.add(spotLight);
-
-  const targetObject = new Object3D();
-  this.scene.add(targetObject);
-  targetObject.position.copy(target);
-  targetObject.updateMatrix()
-  spotLight.target = targetObject;
-  spotLight.target.updateMatrixWorld();
-
-  const pointLightHelper = new SpotLightHelper(spotLight);
-  this.scene.add(pointLightHelper);
- }
-
- thelaBolb() {
-  // Balb inside thela down
-  const thelaBulb = new SpotLight(0xffff00, 5, 500);
-  thelaBulb.position.set(0, 600, 0);
-  this.scene.add(thelaBulb);
-
-  this.createSpotLight(new Vector3(-50, 575, 0), new Vector3(50, 575, 0), 100, 50);
-  this.createSpotLight(new Vector3(50, 575, 0), new Vector3(-50, 575, 0), 100, 50);
-  this.createSpotLight(new Vector3(0, 575, 50), new Vector3(0, 575, -50), 100, 50);
-  this.createSpotLight(new Vector3(0, 575, -50), new Vector3(0, 575, 50), 100, 50);
-
- }
-
- streetLight() {
-  const bulb = new SpotLight(0xffffff, 4, 1800);
-  bulb.position.set(-100, 1650, -580);
-  this.scene.add(bulb);
-  const targetObject = new Object3D();
-  this.scene.add(targetObject);
-  targetObject.position.set(-100, 0, -580);
-  targetObject.updateMatrix()
-  bulb.target = targetObject;
-  bulb.target.updateMatrixWorld();
-  this.createSpotLight(new Vector3(-100, 1550, -580), new Vector3(-100, 1850, -580), 100, 100);
-
-  // const pointLightHelper = new SpotLightHelper(bulb);
-  // this.scene.add(pointLightHelper);
  }
 
  addBase() {
@@ -84,22 +41,84 @@ export class Viewer extends React.Component {
   this.scene.add(plane);
  }
 
+ createSpotLight(position: Vector3, target: Vector3, intencity: number, distance: number) {
+  const spotLight = new SpotLight(0xffffff, intencity, distance);
+  spotLight.position.copy(position);
+  this.scene.add(spotLight);
+  const targetObject = new Object3D();
+  this.scene.add(targetObject);
+  targetObject.position.copy(target);
+  targetObject.updateMatrix()
+  spotLight.target = targetObject;
+  spotLight.target.updateMatrixWorld();
+ }
+
+
+
+ thelaLight() {
+  // Balb inside thela down
+  const thelaBulb = new SpotLight(0xffff00, 5, 500);
+  thelaBulb.position.set(0, 600, 0);
+  this.scene.add(thelaBulb);
+  this.createSpotLight(new Vector3(-50, 575, 0), new Vector3(50, 575, 0), 100, 50);
+  this.createSpotLight(new Vector3(50, 575, 0), new Vector3(-50, 575, 0), 100, 50);
+  this.createSpotLight(new Vector3(0, 575, 50), new Vector3(0, 575, -50), 100, 50);
+  this.createSpotLight(new Vector3(0, 575, -50), new Vector3(0, 575, 50), 100, 50);
+ }
+
+ bannerLight() {
+  const bulb = new SpotLight(0xffffff, 0.5, 2100);
+  bulb.position.set(800, 0, 800);
+  this.scene.add(bulb);
+  const targetObject = new Object3D();
+  this.scene.add(targetObject);
+  targetObject.position.set(0, 0, 0);
+  targetObject.updateMatrix()
+  bulb.target = targetObject;
+  bulb.target.updateMatrixWorld();
+ }
+
+ streetLight() {
+  const bulb = new SpotLight(0xffffff, 4, 2100);
+  bulb.position.set(-100, 1650, -580);
+  this.scene.add(bulb);
+  const targetObject = new Object3D();
+  this.scene.add(targetObject);
+  targetObject.position.set(-100, 0, -580);
+  targetObject.updateMatrix()
+  bulb.target = targetObject;
+  bulb.target.updateMatrixWorld();
+  this.createSpotLight(new Vector3(-100, 1550, -580), new Vector3(-100, 1850, -580), 100, 100);
+ }
+
+
+
  async componentDidMount() {
-
   this.addBase();
-
-  // this.thelaBolb();
-  // this.streetLight();
-
 
 
   // const geometry = new BoxGeometry(0.2, 0.2, 0.2);
   // const material = new MeshLambertMaterial({ color: new Color(0xff0000) });
   // this.scene.add(new Mesh(geometry, material));
 
-  const wadaPaav = await loadModel("./model/scene.gltf");
+
+  // add gada
+  const wadaPaav = await loadModel("./model/gada/scene.gltf");
   wadaPaav.scene.castShadow = true;
   this.scene.add(wadaPaav.scene);
+
+
+  // add phone
+  const phone = await loadModel("./model/phone/scene.gltf");
+  phone.scene.castShadow = true;
+
+  phone.scene.rotateX(Math.PI / 2);
+  phone.scene.rotateZ(-Math.PI / 3);
+  phone.scene.scale.copy(new Vector3(100, 100, 100));
+  phone.scene.position.copy(this.phonePosition);
+  this.scene.add(phone.scene);
+
+  // add qr scanner
 
 
   // Placeholder for light
@@ -109,9 +128,18 @@ export class Viewer extends React.Component {
   this.renderer = new WebGLRenderer({ canvas: document.getElementById("viewer-3d") as HTMLCanvasElement, antialias: true, alpha: true });
   this.renderer.setSize(window.innerWidth, window.innerHeight);
 
-  const environment = new RoomEnvironment();
-  const pmremGenerator = new PMREMGenerator(this.renderer);
-  this.scene.environment = pmremGenerator.fromScene(environment).texture;
+  if (this.isNight) {
+   this.bannerLight();
+   this.thelaLight();
+   this.streetLight();
+  } else {
+   const environment = new RoomEnvironment();
+   const pmremGenerator = new PMREMGenerator(this.renderer);
+   this.scene.environment = pmremGenerator.fromScene(environment).texture;
+  }
+
+  //
+
 
   this.controls = new OrbitControls(this.camera, this.renderer.domElement);
   this.controls.listenToKeyEvents(window); // optional
@@ -120,7 +148,7 @@ export class Viewer extends React.Component {
   this.controls.dampingFactor = 0.05;
   this.controls.screenSpacePanning = false;
   this.controls.minDistance = 0;
-  this.controls.maxDistance = 50000;
+  this.controls.maxDistance = 2000;
   this.controls.maxPolarAngle = Math.PI - Math.PI * 1.5 / 4;
 
   this.renderer.setAnimationLoop(this.animation.bind(this));
@@ -129,9 +157,13 @@ export class Viewer extends React.Component {
   this.renderer.outputEncoding = sRGBEncoding;
 
   window.addEventListener("resize", this.onWindowResize.bind(this));
-  this.setIsoView()
+  this.setIsoView();
 
+  const element = document.getElementById("loader-holder");
 
+  if (element) {
+   element.parentNode?.removeChild(element);
+  }
 
  }
 
@@ -177,10 +209,6 @@ export class Viewer extends React.Component {
  }
 
  render() {
-  return <canvas id="viewer-3d" style={{
-   backgroundImage: "url(vadapaavbg.jpg)",
-   backgroundRepeat: "no-repeat",
-   backgroundSize: "cover"
-  }} />
+  return <canvas id="viewer-3d" style={{ background: this.isNight ? "rgba(0, 0, 0, 0.92)" : "" }} />
  }
 }

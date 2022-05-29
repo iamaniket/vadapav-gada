@@ -8,6 +8,61 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.loader {
+  border: 16px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 16px solid #3498db;
+  width: 120px;
+  height: 120px;
+  -webkit-animation: spin 2s linear infinite; /* Safari */
+  animation: spin 2s linear infinite;  
+  position: absolute;
+  top: 0;
+  left: 0px;
+  bottom: 0;
+  margin: auto;
+  right: 0px;
+}
+
+.vadapaav-thumb{
+  background: #100d0a;
+  position: absolute;
+  left: 0px;
+  bottom: 50px;
+  margin: auto;
+  right: 0px;
+}
+
+.background{
+  background-color: rgb(16, 13, 10);
+  left: 0px;
+  right: 0px;
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+}
+
+
+.loader-holder{
+  position: absolute;
+  top: 0;
+  left: 0px;
+  bottom: 0;
+  margin: auto;
+  right: 0px;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
