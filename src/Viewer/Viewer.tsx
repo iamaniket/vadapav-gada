@@ -25,6 +25,7 @@ export class Viewer extends React.Component {
   intersected!: Mesh & { currentHex: number } | undefined;//bUTTONS
   phonePosition: Vector3 = new Vector3(60, 310, -365);
   qrPosition: Vector3 = new Vector3(280, 310, 320);
+  sampleBordPosition: Vector3 = new Vector3(-550, 0, -670);
   camera: PerspectiveCamera;
   scene: Scene;
   controls: any;
@@ -208,15 +209,25 @@ export class Viewer extends React.Component {
     phone.scene.position.copy(this.phonePosition);
     this.scene.add(phone.scene);
 
-    // add phone
+    // add QR code 
     const qr = await loadModel("./model/qr.glb") as { scene: Scene };
     qr.scene.castShadow = true;
     // qr.scene.rotateX(Math.PI / 2);
     qr.scene.rotateY(Math.PI - Math.PI / 10);
-    qr.scene.scale.copy(new Vector3(5, 5, 5));
+    qr.scene.scale.copy(new Vector3(6, 6, 6));
     qr.scene.position.copy(this.qrPosition);
     this.scene.add(qr.scene);
 
+
+    // add sample work bord
+    const sampleBord = await loadModel("./model/sampleideas.glb") as { scene: Scene };
+    sampleBord.scene.castShadow = true;
+    // qr.scene.rotateX(Math.PI / 2);
+    sampleBord.scene.rotateY(Math.PI / 2);
+    sampleBord.scene.scale.copy(new Vector3(4, 4, 4));
+    sampleBord.scene.position.copy(this.sampleBordPosition);
+    this.scene.add(sampleBord.scene);
+    this.selectable.push(sampleBord.scene);
 
 
 
@@ -270,10 +281,27 @@ export class Viewer extends React.Component {
     this.drag = false;
   }
 
-  onPointerUp() {
+  onPointerUp(event: MouseEvent) {
     if (!this.drag) {
+
+      this.drag = true;
+      this.pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+      this.pointer.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+      this.intersect();
+
       if (this.intersected) {
         switch (this.intersected.name) {
+          case "moter":
+          case "motercycle":
+            //@ts-ignore
+            window.open("https://aniketwachakawade.com/examples/motorcyclecatalog", '_blank').focus();
+            break;
+          case "saree":
+          case "sareebord":
+            //@ts-ignore
+            window.open("https://aniketwachakawade.com/examples/saree_viewer", '_blank').focus();
+            break;
           case "linkedin":
             //@ts-ignore
             window.open("https://www.linkedin.com/in/aniketwachakawade/", '_blank').focus();
@@ -345,21 +373,46 @@ export class Viewer extends React.Component {
   }
 
   actOnIntersection(object: Object3D, isClick = false) {
+    let objectCheck = object.name.search("noricebord");
+    if (objectCheck !== -1) {
+      return;
+    }
+    objectCheck = object.name.search("moter");
+    if (objectCheck === -1) {
+      objectCheck = object.name.search("saree");
+    }
+
+    if (objectCheck > -1) {
+
+      if (this.intersected !== object) {
+        //@ts-ignore
+        if (this.intersected) this.intersected.material.color.setHex(this.intersected.currentHex);
+        this.intersected = object as Mesh & { currentHex: number };
+
+        //@ts-ignore
+        const material = object.material as MeshBasicMaterial;
+        //@ts-ignore
+        this.intersected.currentHex = material.color.getHex();
+        material.color.setHex(0x0045a6);
+      }
+      return;
+    }
+
     const parrentNode = this.getParentRecrcive(object) as Mesh;
     if (this.intersected !== parrentNode) {
       //@ts-ignore
-      if (this.intersected) this.intersected.children[1].material.color.setHex(this.intersected.currentHex);
-      this.intersected = parrentNode as Mesh & { currentHex: number };
+      if (this.intersected) this.intersected.material.color.setHex(this.intersected.currentHex);
+      this.intersected = parrentNode.children[1] as Mesh & { currentHex: number };
+      this.intersected.name = parrentNode.name;
 
       //@ts-ignore
-      const material = this.intersected.children[1].material as MeshBasicMaterial;
+      const material = this.intersected.material as MeshBasicMaterial;
       this.intersected.currentHex = material.color.getHex();
       material.color.setHex(0x0045a6);
     }
   }
 
-  animation() {
-    this.controls.update();
+  intersect() {
     // update the picking ray with the camera and pointer position
     this.raycaster.setFromCamera(this.pointer, this.camera);
     // calculate objects intersecting the picking ray
@@ -370,10 +423,17 @@ export class Viewer extends React.Component {
     } else {
       if (this.intersected) {
         //@ts-ignore
-        this.intersected.children[1].material.color.setHex(0xffffff);
+        this.intersected.material.color.setHex(0xffffff);
         this.intersected = undefined;
       }
     }
+  }
+
+
+
+  animation() {
+    this.controls.update();
+    this.intersect();
     this.renderer.render(this.scene, this.camera);
   }
 
