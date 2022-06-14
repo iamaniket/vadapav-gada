@@ -64,7 +64,7 @@ export class Viewer extends React.Component {
 
 
   thelaLight() {
-    // Balb inside thela down
+    // Bulb inside thela down
     const thelaBulb = new SpotLight(0xffff00, 5, 500);
     thelaBulb.position.set(0, 600, 0);
     this.scene.add(thelaBulb);
