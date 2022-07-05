@@ -5,7 +5,10 @@
 */
 
 import React from "react";
-import { ACESFilmicToneMapping, AmbientLight, BackSide, CircleGeometry, DirectionalLight, DirectionalLightHelper, DoubleSide, FrontSide, Group, Material, Mesh, MeshBasicMaterial, MeshDepthMaterial, MeshDistanceMaterial, MeshLambertMaterial, MeshPhongMaterial, MeshStandardMaterial, Object3D, Path, PerspectiveCamera, PlaneGeometry, PMREMGenerator, PointLight, PointLightHelper, Raycaster, ReinhardToneMapping, ShapeGeometry, ShapePath, SpotLight, SpotLightHelper, sRGBEncoding, Vector2 } from "three";
+import {
+  ACESFilmicToneMapping, BackSide, CircleGeometry, DoubleSide, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, Object3D, PerspectiveCamera,
+  PMREMGenerator, Raycaster, ReinhardToneMapping, ShapeGeometry, ShapePath, SpotLight, sRGBEncoding, Vector2
+} from "three";
 import { Box3 } from "three/src/math/Box3";
 import { Vector3 } from "three/src/math/Vector3";
 import { WebGLRenderer } from "three/src/renderers/WebGLRenderer";
@@ -14,6 +17,8 @@ import { OrbitControls } from "../lib/OrbitControls.js";
 import { loadModel } from "./ModelLoader";
 import { RoomEnvironment } from "../lib/RoomEnvironment.js";
 import { SVGLoader } from "../lib/SVGLoader.js";
+
+const assetUrl = "https://raw.githubusercontent.com/iamaniket/vadapav-gada/main/public/"
 
 export class Viewer extends React.Component {
 
@@ -142,7 +147,7 @@ export class Viewer extends React.Component {
 
   async createLogoHolder(): Promise<Scene> {
     // add logoholder
-    const logoHolder = await loadModel("./model/logoholder.glb") as { scene: Scene };
+    const logoHolder = await loadModel(assetUrl + "model/logoholder.glb") as { scene: Scene };
     logoHolder.scene.castShadow = true;
     logoHolder.scene.rotateX(Math.PI / 2);
     logoHolder.scene.rotateZ(-Math.PI / 2);
@@ -158,7 +163,7 @@ export class Viewer extends React.Component {
     const logoHolder1 = await this.createLogoHolder();
     logoHolder1.name = "linkedin";
     logoHolder1.position.copy(new Vector3(305, 180, 300));
-    await this.addLogo(logoHolder1, "./model/linkedin.svg");
+    await this.addLogo(logoHolder1, assetUrl + "model/linkedin.svg");
     this.scene.add(logoHolder1);
     this.selectable.push(logoHolder1);
 
@@ -166,21 +171,21 @@ export class Viewer extends React.Component {
 
     logoHolder2.name = "email";
     logoHolder2.position.copy(new Vector3(305, 85, 300));
-    await this.addLogo(logoHolder2, "./model/email.svg");
+    await this.addLogo(logoHolder2, assetUrl + "model/email.svg");
     this.scene.add(logoHolder2);
     this.selectable.push(logoHolder2);
 
     const logoHolder3 = await this.createLogoHolder();
     logoHolder3.name = "github";
     logoHolder3.position.copy(new Vector3(305, 180, 180));
-    await this.addLogo(logoHolder3, "./model/github.svg");
+    await this.addLogo(logoHolder3, assetUrl + "model/github.svg");
     this.scene.add(logoHolder3);
     this.selectable.push(logoHolder3);
 
     const logoHolder4 = await this.createLogoHolder();
     logoHolder4.name = "document";
     logoHolder4.position.copy(new Vector3(305, 85, 180));
-    await this.addLogo(logoHolder4, "./model/document.svg");
+    await this.addLogo(logoHolder4, assetUrl + "model/document.svg");
     this.scene.add(logoHolder4);
     this.selectable.push(logoHolder4);
 
@@ -194,14 +199,14 @@ export class Viewer extends React.Component {
 
 
     // add gada
-    const wadaPaav = await loadModel("./model/gada/scene.gltf") as { scene: Scene };
+    const wadaPaav = await loadModel(assetUrl + "model/gada/scene.gltf") as { scene: Scene };
     wadaPaav.scene.castShadow = true;
     // wadaPaav.scene.MA = true;
     wadaPaav.scene.receiveShadow = true;
     this.scene.add(wadaPaav.scene);
 
     // add phone
-    const phone = await loadModel("./model/phone/scene.gltf") as { scene: Scene };
+    const phone = await loadModel(assetUrl + "model/phone/scene.gltf") as { scene: Scene };
     phone.scene.castShadow = true;
     phone.scene.rotateX(Math.PI / 2);
     phone.scene.rotateZ(-Math.PI / 3);
@@ -210,7 +215,7 @@ export class Viewer extends React.Component {
     this.scene.add(phone.scene);
 
     // add QR code 
-    const qr = await loadModel("./model/qr.glb") as { scene: Scene };
+    const qr = await loadModel(assetUrl + "model/qr.glb") as { scene: Scene };
     qr.scene.castShadow = true;
     // qr.scene.rotateX(Math.PI / 2);
     qr.scene.rotateY(Math.PI - Math.PI / 10);
@@ -220,7 +225,7 @@ export class Viewer extends React.Component {
 
 
     // add sample work bord
-    const sampleBord = await loadModel("./model/sampleideas.glb") as { scene: Scene };
+    const sampleBord = await loadModel(assetUrl + "model/sampleideas.glb") as { scene: Scene };
     sampleBord.scene.castShadow = true;
     // qr.scene.rotateX(Math.PI / 2);
     sampleBord.scene.rotateY(Math.PI / 2);
