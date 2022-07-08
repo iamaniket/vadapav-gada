@@ -5,7 +5,7 @@
 */
 
 import React from "react";
-import { ACESFilmicToneMapping, AmbientLight, BackSide, CircleGeometry, DirectionalLight, DirectionalLightHelper, DoubleSide, FrontSide, Group, Material, Mesh, MeshBasicMaterial, MeshDepthMaterial, MeshDistanceMaterial, MeshLambertMaterial, MeshPhongMaterial, MeshStandardMaterial, Object3D, Path, PerspectiveCamera, PlaneGeometry, PMREMGenerator, PointLight, PointLightHelper, Raycaster, ReinhardToneMapping, ShapeGeometry, ShapePath, SpotLight, SpotLightHelper, sRGBEncoding, Vector2 } from "three";
+import { ACESFilmicToneMapping, BackSide, CircleGeometry, DoubleSide, FrontSide, Group, Material, Mesh, MeshBasicMaterial, MeshDepthMaterial, MeshDistanceMaterial, MeshLambertMaterial, MeshPhongMaterial, MeshStandardMaterial, Object3D, Path, PerspectiveCamera, PlaneGeometry, PMREMGenerator, PointLight, PointLightHelper, Raycaster, ReinhardToneMapping, ShapeGeometry, ShapePath, SpotLight, SpotLightHelper, sRGBEncoding, Vector2 } from "three";
 import { Box3 } from "three/src/math/Box3";
 import { Vector3 } from "three/src/math/Vector3";
 import { WebGLRenderer } from "three/src/renderers/WebGLRenderer";
@@ -14,7 +14,7 @@ import { OrbitControls } from "../lib/OrbitControls.js";
 import { loadModel } from "./ModelLoader";
 import { RoomEnvironment } from "../lib/RoomEnvironment.js";
 import { SVGLoader } from "../lib/SVGLoader.js";
-
+import Flame from './Flame'
 export class Viewer extends React.Component {
 
   raycaster = new Raycaster();
@@ -29,6 +29,7 @@ export class Viewer extends React.Component {
   camera: PerspectiveCamera;
   scene: Scene;
   controls: any;
+  flame: Flame;
   isNight = new Date().getHours() < 6 || new Date().getHours() >= 19;
 
 
@@ -36,6 +37,7 @@ export class Viewer extends React.Component {
     super(props);
     this.camera = new PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 10000);
     this.scene = new Scene();
+    this.flame = new Flame();
   }
 
   addBase() {
@@ -191,8 +193,6 @@ export class Viewer extends React.Component {
     this.addBase();
     this.createLinks();
 
-
-
     // add gada
     const wadaPaav = await loadModel("./model/gada/scene.gltf") as { scene: Scene };
     wadaPaav.scene.castShadow = true;
@@ -229,7 +229,9 @@ export class Viewer extends React.Component {
     this.scene.add(sampleBord.scene);
     this.selectable.push(sampleBord.scene);
 
-
+    // Add flames
+    const flames = this.flame.getFlames()
+    this.scene.add(flames);
 
     this.renderer = new WebGLRenderer({ canvas: document.getElementById("viewer-3d") as HTMLCanvasElement, antialias: true, alpha: true });
     this.renderer.toneMapping = ReinhardToneMapping;
@@ -254,7 +256,7 @@ export class Viewer extends React.Component {
     this.controls.dampingFactor = 0.05;
     this.controls.screenSpacePanning = false;
     this.controls.minDistance = 0;
-    this.controls.maxDistance = 2000;
+    //this.controls.maxDistance = 2000;
     this.controls.maxPolarAngle = Math.PI - Math.PI * 1.5 / 4;
 
     this.renderer.setAnimationLoop(this.animation.bind(this));
@@ -433,6 +435,7 @@ export class Viewer extends React.Component {
 
   animation() {
     this.controls.update();
+    this.flame.update();
     this.intersect();
     this.renderer.render(this.scene, this.camera);
   }

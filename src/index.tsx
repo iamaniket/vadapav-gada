@@ -6,14 +6,14 @@ import reportWebVitals from './reportWebVitals';
 import isMobile from 'is-mobile';
 
 ReactDOM.render(
-  <React.StrictMode>
+  <>
     <div id="loader-holder" className="loader-holder">
       <div className="background" />
       <img className="vadapaav-thumb" src="./vadapaav.png" alt="Girl in a jacket" style={{ width: isMobile() ? "80%" : "22%" }} />
       <div className="loader" />
     </div>
     <App />
-  </React.StrictMode>,
+  </>,
   document.getElementById('root')
 );
 
