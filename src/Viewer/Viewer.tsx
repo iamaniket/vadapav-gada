@@ -6,7 +6,8 @@
 
 import React from "react";
 import {
-  ACESFilmicToneMapping, BackSide, CircleGeometry, DoubleSide, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, Object3D, PerspectiveCamera,
+  ACESFilmicToneMapping, BackSide, CircleGeometry, Color, DoubleSide, Fog, Group, Mesh, MeshBasicMaterial, MeshPhongMaterial, MeshStandardMaterial, Object3D, PerspectiveCamera,
+  PlaneGeometry,
   PMREMGenerator, Raycaster, ReinhardToneMapping, ShapeGeometry, ShapePath, SpotLight, sRGBEncoding, Vector2
 } from "three";
 import { Box3 } from "three/src/math/Box3";
@@ -41,13 +42,14 @@ export class Viewer extends React.Component {
     super(props);
     this.camera = new PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 10000);
     this.scene = new Scene();
+
+    this.scene.background = new Color( 0xa0a0a0 );
+		this.scene.fog = new Fog( 0xa0a0a0, 1, 10000 );
   }
 
   addBase() {
-    const geometry = new CircleGeometry(1500, 32);
-    geometry.rotateX(Math.PI / 2);
-    const material = new MeshStandardMaterial({ color: 0xa86b32, side: BackSide, opacity: 0.5 });
-    const plane = new Mesh(geometry, material);
+    const plane = new Mesh( new PlaneGeometry( 10000, 10000 ), new MeshStandardMaterial( { color: 0x999999, depthWrite: false } ) );
+    plane.rotation.x = - Math.PI / 2;
     plane.receiveShadow = true;
     plane.castShadow = true;
     plane.name = "base"
