@@ -36,6 +36,13 @@ import { loadModel } from "./ModelLoader";
 import { RoomEnvironment } from "../lib/RoomEnvironment.js";
 import { SVGLoader } from "../lib/SVGLoader.js";
 import { isMobile } from "is-mobile";
+import mixpanel from "mixpanel-browser";
+
+mixpanel.init("af44aaa9f572d564af1baf30ee1b6b28", { debug: true });
+
+mixpanel.track("Website Visit", {
+  source: isMobile() ? "Mobile" : "Personal Computer",
+});
 
 // const isMobie = mobile();
 
