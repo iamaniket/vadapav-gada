@@ -130,7 +130,6 @@ class SVGLoader extends Loader {
           break;
 
         default:
-        // console.log( node );
       }
 
       if (path) {
@@ -175,8 +174,6 @@ class SVGLoader extends Loader {
       let doSetFirstPoint = false;
 
       const d = node.getAttribute("d");
-
-      // console.log( d );
 
       const commands = d.match(/[a-df-z][^a-df-z]*/gi);
 
@@ -560,7 +557,6 @@ class SVGLoader extends Loader {
             console.warn(command);
         }
 
-        // console.log( type, parseFloats( data ), parseFloats( data ).length  )
 
         doSetFirstPoint = false;
       }
@@ -1489,8 +1485,6 @@ class SVGLoader extends Loader {
     });
 
     const data = { paths: paths, xml: xml.documentElement };
-
-    // console.log( paths );
     return data;
   }
 
