@@ -27,12 +27,9 @@ export function loadModel(
     loadGltf(
       fileName,
       (gltf: { scene: Scene }): void => {
-        console.log(`Loading Complete :${fileName}`);
         resolve(gltf);
       },
       (event: ProgressEvent<EventTarget>) => {
-        console.log(`Loading model :${fileName}`);
-        console.log(event);
       },
       (errorEvent: ErrorEvent) => {
         console.error(`Loading model :${fileName}`);
