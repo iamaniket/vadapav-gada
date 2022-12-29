@@ -38,9 +38,7 @@ import { SVGLoader } from "../lib/SVGLoader.js";
 import { isMobile } from "is-mobile";
 import mixpanel from "mixpanel-browser";
 import { TextGeometry } from "../lib/TextGeometry";
-
-
-
+import TWEEN from "@tweenjs/tween.js";
 
 mixpanel.init("af44aaa9f572d564af1baf30ee1b6b28", { debug: true });
 
@@ -66,7 +64,7 @@ export class Viewer extends React.Component {
   camera: PerspectiveCamera;
   scene: Scene;
   controls: any;
-  isNight = false;//new Date().getHours() < 6 || new Date().getHours() >= 17;
+  isNight = false; //new Date().getHours() < 6 || new Date().getHours() >= 17;
 
   constructor(props: {}) {
     super(props);
@@ -247,7 +245,7 @@ export class Viewer extends React.Component {
     // PROJECTS
     const textHolder1 = await this.createLogoHolder("nameholder");
     textHolder1.name = "PROJECTS";
-    textHolder1.position.copy(new Vector3(310, 200, -215));
+    textHolder1.position.copy(new Vector3(310, 180, -215));
     await this.addText(textHolder1, "PROJECTS");
     this.scene.add(textHolder1);
     this.selectable.push(textHolder1);
@@ -255,18 +253,18 @@ export class Viewer extends React.Component {
     // EXPERIENCE
     const textHolder2 = await this.createLogoHolder("nameholder");
     textHolder2.name = "EXPERIENCE";
-    textHolder2.position.copy(new Vector3(310, 140, -215));
+    textHolder2.position.copy(new Vector3(310, 100, -215));
     await this.addText(textHolder2, "EXPERIENCE");
     this.scene.add(textHolder2);
     this.selectable.push(textHolder2);
 
-    // EXPERIENCE
-    const textHolder3 = await this.createLogoHolder("nameholder");
-    textHolder3.name = "CREDITS";
-    textHolder3.position.copy(new Vector3(310, 80, -215));
-    await this.addText(textHolder3, "CREDITS");
-    this.scene.add(textHolder3);
-    this.selectable.push(textHolder3);
+    // // EXPERIENCE
+    // const textHolder3 = await this.createLogoHolder("nameholder");
+    // textHolder3.name = "CREDITS";
+    // textHolder3.position.copy(new Vector3(310, 80, -215));
+    // await this.addText(textHolder3, "CREDITS");
+    // this.scene.add(textHolder3);
+    // this.selectable.push(textHolder3);
   }
 
   async createLinks() {
@@ -421,7 +419,20 @@ export class Viewer extends React.Component {
 
       if (this.intersected) {
         console.log(this.intersected.name);
-        switch (this.intersected.name) {      
+        switch (this.intersected.name) {
+          case "PROJECTS":
+            new TWEEN.Tween(this.camera.position)
+              .to({ x: -783, y: 73, z: -1673 }, 1000)
+              .start();
+            break;
+          case "EXPERIENCE":
+            new TWEEN.Tween(this.camera.position)
+              .to({ x: 0.000161988, y: 1000.804784, z: 0.0000016 }, 1000)
+              .start();
+            break;
+          // case "ABOUT":
+          //   new TWEEN.Tween(this.camera.position).to({x: -783, y: 73, z: -1673}, 1000).start();
+          //  break;
           case "runlola":
             //@ts-ignore
             window
@@ -599,6 +610,8 @@ export class Viewer extends React.Component {
   animation() {
     this.controls.update();
     this.intersect();
+    TWEEN.update();
+    console.log(this.camera.position);
     this.renderer.render(this.scene, this.camera);
   }
 
