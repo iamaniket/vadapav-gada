@@ -46,9 +46,8 @@ mixpanel.track("Website Visit", {
   source: isMobile() ? "Mobile" : "Personal Computer",
 });
 
-// const isMobie = mobile();
 
-const assetUrl = ""; //https://raw.githubusercontent.com/iamaniket/vadapav-gada/main/public/
+const assetUrl = "https://raw.githubusercontent.com/iamaniket/vadapav-gada/main/public/"
 
 export class Viewer extends React.Component {
   font: any;
@@ -64,7 +63,7 @@ export class Viewer extends React.Component {
   camera: PerspectiveCamera;
   scene: Scene;
   controls: any;
-  isNight = false; //new Date().getHours() < 6 || new Date().getHours() >= 17;
+  isNight = new Date().getHours() < 6 || new Date().getHours() >= 17;
 
   constructor(props: {}) {
     super(props);
