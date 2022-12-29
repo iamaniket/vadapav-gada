@@ -1,9 +1,11 @@
 import { Scene, ShapePath } from "three";
 import { GLTFLoader } from "../lib/GLTFLoader";
 import { SVGLoader } from "../lib/SVGLoader";
+import { Font, FontLoader } from "../lib/FontLoader";
 
 const gLTFLoader = new GLTFLoader();
 const sVGLoader = new SVGLoader();
+const fontLoader = new FontLoader();
 
 export function loadGltf(
   modelUrl: string,
@@ -35,6 +37,18 @@ export function loadModel(
         console.error(`Loading model :${fileName}`);
         console.error(errorEvent);
         reject(errorEvent);
+      }
+    );
+  });
+}
+
+
+export function loadFont(
+  fileName: string
+): Promise<Font> {
+  return new Promise((resolve, reject) => {
+    fontLoader.load(fileName,(font: Font): void => {
+        resolve(font);
       }
     );
   });
