@@ -46,8 +46,8 @@ mixpanel.track("Website Visit", {
   source: isMobile() ? "Mobile" : "Personal Computer",
 });
 
-
-const assetUrl = "https://raw.githubusercontent.com/iamaniket/vadapav-gada/main/public/"
+const assetUrl =
+  "https://raw.githubusercontent.com/iamaniket/vadapav-gada/main/public/";
 
 export class Viewer extends React.Component {
   font: any;
@@ -253,7 +253,7 @@ export class Viewer extends React.Component {
     const textHolder2 = await this.createLogoHolder("nameholder");
     textHolder2.name = "EXPERIENCE";
     textHolder2.position.copy(new Vector3(310, 100, -215));
-    await this.addText(textHolder2, "EXPERIENCE");
+    await this.addText(textHolder2, "Location");
     this.scene.add(textHolder2);
     this.selectable.push(textHolder2);
 
@@ -323,7 +323,7 @@ export class Viewer extends React.Component {
     phone.scene.rotateZ(-Math.PI / 3);
     phone.scene.scale.copy(new Vector3(100, 100, 100));
     phone.scene.position.copy(this.phonePosition);
-    this.scene.add(phone.scene);
+    // this.scene.add(phone.scene);
 
     // add QR code
     const qr = (await loadModel(assetUrl + "model/qr.glb")) as { scene: Scene };
@@ -358,7 +358,7 @@ export class Viewer extends React.Component {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setPixelRatio(window.devicePixelRatio);
 
-    // this.scene.add(thelaBulb);
+    // this.scene.add(thelaBulb);awsq4d4w54r54rtrfggfffffffvhuijhgfdxcszassssssssssssssaa bbbbbbbbbbbb333333333333333~~!AAZG
 
     if (this.isNight) {
       this.bannerLight();
@@ -423,11 +423,13 @@ export class Viewer extends React.Component {
             new TWEEN.Tween(this.camera.position)
               .to({ x: -783, y: 73, z: -1673 }, 1000)
               .start();
+            mixpanel.track("Projects", {});
             break;
           case "EXPERIENCE":
             new TWEEN.Tween(this.camera.position)
               .to({ x: 0.000161988, y: 1000.804784, z: 0.0000016 }, 1000)
               .start();
+            mixpanel.track("Location", {});
             break;
           // case "ABOUT":
           //   new TWEEN.Tween(this.camera.position).to({x: -783, y: 73, z: -1673}, 1000).start();
@@ -443,6 +445,7 @@ export class Viewer extends React.Component {
             break;
 
           case "motercycle":
+            mixpanel.track("Project: Motercycle", {});
             //@ts-ignore
             window
               .open(
@@ -453,6 +456,7 @@ export class Viewer extends React.Component {
             break;
           case "saree":
           case "sareebord":
+            mixpanel.track("Project: Sareebord", {});
             //@ts-ignore
             window
               .open(
@@ -462,19 +466,23 @@ export class Viewer extends React.Component {
               .focus();
             break;
           case "linkedin":
+            mixpanel.track("Linkedin", {});
             //@ts-ignore
             window
               .open("https://www.linkedin.com/in/aniketwachakawade/", "_blank")
               .focus();
             break;
           case "github":
+            mixpanel.track("Github", {});
             //@ts-ignore
             window.open("https://github.com/iamaniket", "_blank").focus();
             break;
           case "email":
+            mixpanel.track("Email", {});
             window.location.href = "mailto:aniketgw47@gmail.com";
             break;
           case "document":
+            mixpanel.track("Resume", {});
             //@ts-ignore
             window
               .open(
