@@ -440,7 +440,7 @@ export class Viewer extends React.Component {
             //@ts-ignore
             window
               .open(
-                "https://aniketwachakawade.com/examples/spectralenergy",
+                "https://aniketwachakawade.com/examples/promaton",
                 "_blank"
               )
               .focus();
