@@ -14,6 +14,7 @@ import {
   HemisphereLight,
   Mesh,
   MeshBasicMaterial,
+  MeshLambertMaterial,
   MeshStandardMaterial,
   Object3D,
   PerspectiveCamera,
@@ -82,7 +83,7 @@ export class Viewer extends React.Component {
   addBase() {
     const plane = new Mesh(
       new PlaneGeometry(100000, 100000),
-      new MeshStandardMaterial({ color: 0x999999, depthWrite: false })
+      new MeshLambertMaterial({ color: 0xf0f0f0, depthWrite: true })
     );
     plane.rotation.x = -Math.PI / 2;
     plane.receiveShadow = true;
@@ -312,6 +313,7 @@ export class Viewer extends React.Component {
     // wadaPaav.scene.MA = true;
     wadaPaav.scene.receiveShadow = true;
     this.scene.add(wadaPaav.scene);
+
 
     // add phone
     const phone = (await loadModel(assetUrl + "model/phone/scene.gltf")) as {
