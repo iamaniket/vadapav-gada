@@ -64,7 +64,7 @@ export class Viewer extends React.Component {
   camera: PerspectiveCamera;
   scene: Scene;
   controls: any;
-  isNight = new Date().getHours() < 6 || new Date().getHours() >= 17;
+  isNight = false;// new Date().getHours() < 6 || new Date().getHours() >= 17;
 
   constructor(props: {}) {
     super(props);
@@ -76,14 +76,14 @@ export class Viewer extends React.Component {
     );
     this.scene = new Scene();
 
-    this.scene.background = new Color(this.isNight ? 0x090909 : 0xa0a0a0);
-    this.scene.fog = new Fog(this.isNight ? 0x090909 : 0xa0a0a0, 1, 10000);
+    this.scene.background = new Color(this.isNight ? 0x090909 : 0xa8d1ed);
+    this.scene.fog = new Fog(this.isNight ? 0x090909 : 0xa8d1ed, 1, 10000);
   }
 
   addBase() {
     const plane = new Mesh(
       new PlaneGeometry(100000, 100000),
-      new MeshLambertMaterial({ color: 0xf0f0f0, depthWrite: true })
+      new MeshLambertMaterial({ color: 0x82898c, depthWrite: true })
     );
     plane.rotation.x = -Math.PI / 2;
     plane.receiveShadow = true;
@@ -251,12 +251,12 @@ export class Viewer extends React.Component {
     this.selectable.push(textHolder1);
 
     // EXPERIENCE
-    const textHolder2 = await this.createLogoHolder("nameholder");
-    textHolder2.name = "EXPERIENCE";
-    textHolder2.position.copy(new Vector3(310, 100, -215));
-    await this.addText(textHolder2, "Location");
-    this.scene.add(textHolder2);
-    this.selectable.push(textHolder2);
+    // const textHolder2 = await this.createLogoHolder("nameholder");
+    // textHolder2.name = "EXPERIENCE";
+    // textHolder2.position.copy(new Vector3(310, 100, -215));
+    // await this.addText(textHolder2, "Location");
+    // this.scene.add(textHolder2);
+    // this.selectable.push(textHolder2);
 
     // // EXPERIENCE
     // const textHolder3 = await this.createLogoHolder("nameholder");
