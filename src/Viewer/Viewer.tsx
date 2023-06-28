@@ -6,12 +6,11 @@
 
 import React from "react";
 import {
-  ACESFilmicToneMapping,
+  BackSide,
+  BoxGeometry,
   Color,
   DoubleSide,
-  Fog,
   Group,
-  HemisphereLight,
   Mesh,
   MeshBasicMaterial,
   MeshLambertMaterial,
@@ -19,13 +18,12 @@ import {
   Object3D,
   PerspectiveCamera,
   PlaneGeometry,
-  PMREMGenerator,
+  PointLight,
   Raycaster,
-  ReinhardToneMapping,
   ShapeGeometry,
   ShapePath,
+  SphereGeometry,
   SpotLight,
-  sRGBEncoding,
   Vector2,
 } from "three";
 import { Box3 } from "three/src/math/Box3";
@@ -34,12 +32,12 @@ import { WebGLRenderer } from "three/src/renderers/WebGLRenderer";
 import { Scene } from "three/src/scenes/Scene";
 import { OrbitControls } from "../lib/OrbitControls.js";
 import { loadFont, loadModel } from "./ModelLoader";
-import { RoomEnvironment } from "../lib/RoomEnvironment.js";
 import { SVGLoader } from "../lib/SVGLoader.js";
 import { isMobile } from "is-mobile";
 import mixpanel from "mixpanel-browser";
 import { TextGeometry } from "../lib/TextGeometry";
 import TWEEN from "@tweenjs/tween.js";
+import { Reflector } from "../lib/Reflector.js";
 
 mixpanel.init("af44aaa9f572d564af1baf30ee1b6b28", { debug: true });
 
@@ -47,8 +45,8 @@ mixpanel.track("Website Visit", {
   source: isMobile() ? "Mobile" : "Personal Computer",
 });
 
-const assetUrl =
-  "https://raw.githubusercontent.com/iamaniket/vadapav-gada/main/public/";
+const assetUrl = "";
+// "https://raw.githubusercontent.com/iamaniket/vadapav-gada/main/public/";
 
 export class Viewer extends React.Component {
   font: any;
@@ -64,7 +62,7 @@ export class Viewer extends React.Component {
   camera: PerspectiveCamera;
   scene: Scene;
   controls: any;
-  isNight = false;// new Date().getHours() < 6 || new Date().getHours() >= 17;
+  groundMirror: Reflector;
 
   constructor(props: {}) {
     super(props);
@@ -76,8 +74,19 @@ export class Viewer extends React.Component {
     );
     this.scene = new Scene();
 
-    this.scene.background = new Color(this.isNight ? 0x090909 : 0xa8d1ed);
-    this.scene.fog = new Fog(this.isNight ? 0x090909 : 0xa8d1ed, 1, 10000);
+    this.scene.background = new Color(0x090909);
+    // this.scene.fog = new Fog(0xa8d1ed, 1, 10000);
+
+    const geometry = new PlaneGeometry(10000, 10000);
+    this.groundMirror = new Reflector(geometry, {
+      clipBias: 0.003,
+      textureWidth: window.innerWidth * window.devicePixelRatio,
+      textureHeight: window.innerHeight * window.devicePixelRatio,
+      color: 0xb5b5b5,
+    });
+
+    this.groundMirror.position.y = 0.5;
+    this.groundMirror.rotateX(-Math.PI / 2);
   }
 
   addBase() {
@@ -109,33 +118,42 @@ export class Viewer extends React.Component {
   }
 
   thelaLight() {
-    // Balb inside thela down
-    const thelaBulb = new SpotLight(0xffff00, 5, 500);
-    thelaBulb.position.set(0, 600, 0);
-    this.createSpotLight(
-      new Vector3(-50, 575, 0),
-      new Vector3(50, 575, 0),
-      100,
-      50
-    );
-    this.createSpotLight(
-      new Vector3(50, 575, 0),
-      new Vector3(-50, 575, 0),
-      100,
-      50
-    );
-    this.createSpotLight(
-      new Vector3(0, 575, 50),
-      new Vector3(0, 575, -50),
-      100,
-      50
-    );
-    this.createSpotLight(
-      new Vector3(0, 575, -50),
-      new Vector3(0, 575, 50),
-      100,
-      50
-    );
+    const sphere = new SphereGeometry(14, 16, 8);
+
+    //lights
+
+    const light1 = new PointLight(0xeb7f00, 8, 900, 2);
+    light1.add(new Mesh(sphere, new MeshBasicMaterial({ color: 0xff8a00 })));
+    light1.position.set(5, 594, 5.5);
+    this.scene.add(light1);
+
+    // // Balb inside thela down
+    // const thelaBulb = new SpotLight(0xffff00, 5, 500);
+    // thelaBulb.position.set(0, 600, 0);
+    // this.createSpotLight(
+    //   new Vector3(-50, 575, 0),
+    //   new Vector3(50, 575, 0),
+    //   100,
+    //   50
+    // );
+    // this.createSpotLight(
+    //   new Vector3(50, 575, 0),
+    //   new Vector3(-50, 575, 0),
+    //   100,
+    //   50
+    // );
+    // this.createSpotLight(
+    //   new Vector3(0, 575, 50),
+    //   new Vector3(0, 575, -50),
+    //   100,
+    //   50
+    // );
+    // this.createSpotLight(
+    //   new Vector3(0, 575, -50),
+    //   new Vector3(0, 575, 50),
+    //   100,
+    //   50
+    // );
   }
 
   bannerLight() {
@@ -151,37 +169,29 @@ export class Viewer extends React.Component {
   }
 
   streetLight() {
-    const bulb = new SpotLight(0xffffff, 4, 2100);
-    bulb.position.set(-100, 1650, -580);
-    bulb.castShadow = true;
-    bulb.shadow.bias = -0.0001;
-    bulb.shadow.mapSize.width = 1024 * 4;
-    bulb.shadow.mapSize.height = 1024 * 4;
-    this.scene.add(bulb);
-    const targetObject = new Object3D();
-    this.scene.add(targetObject);
-    targetObject.position.set(-100, 0, -580);
-    targetObject.updateMatrix();
-    bulb.target = targetObject;
-    bulb.target.updateMatrixWorld();
-    this.createSpotLight(
-      new Vector3(-100, 1550, -580),
-      new Vector3(-100, 1850, -580),
-      100,
-      100
-    );
+    const sphere = new BoxGeometry(85, 20, 70);
+    const light1 = new PointLight(0xacf0f2, 5, 8000, 2);
+    light1.add(new Mesh(sphere, new MeshBasicMaterial({ color: 0xacf0f2 })));
+    light1.position.set(-95, 1625, -586);
+    this.scene.add(light1);
   }
 
-  createLogoFromPath(paths: Array<ShapePath>): Group {
+  createLogoFromPath(paths: Array<ShapePath>, center: Vector3): Group {
     const group = new Group();
+
+    let color = new Color();
 
     for (let i = 0; i < paths.length; i++) {
       const path = paths[i];
 
-      const material = new MeshStandardMaterial({
+      const material = new MeshBasicMaterial({
         color: path.color,
-        side: DoubleSide,
+        side: BackSide,
       });
+
+      // console.log(path.color);
+
+      color.set(path.color);
 
       const shapes = SVGLoader.createShapes(path);
 
@@ -218,12 +228,17 @@ export class Viewer extends React.Component {
   }
 
   async addLogo(scene: Scene, path: string) {
-    const linkedin = (await loadModel(path)) as { paths: Array<ShapePath> };
-    const linkedinLogo = this.createLogoFromPath(linkedin.paths);
-    linkedinLogo.rotateX(Math.PI / 2);
-    linkedinLogo.scale.copy(new Vector3(0.071, 0.071, 0.071));
-    linkedinLogo.position.copy(new Vector3(-0.85, 0.2, -0.85));
-    scene.add(linkedinLogo);
+    const box = new Box3();
+    box.setFromObject(scene);
+    let center = new Vector3();
+    box.getCenter(center);
+
+    const model = (await loadModel(path)) as { paths: Array<ShapePath> };
+    const modelLogo = this.createLogoFromPath(model.paths, center);
+    modelLogo.rotateX(Math.PI / 2);
+    modelLogo.scale.copy(new Vector3(0.071, 0.071, 0.071));
+    modelLogo.position.copy(new Vector3(-0.85, 0.2, -0.85));
+    scene.add(modelLogo);
   }
 
   async createLogoHolder(name: string): Promise<Scene> {
@@ -237,7 +252,6 @@ export class Viewer extends React.Component {
     logoHolder.scene.rotateX(Math.PI / 2);
     logoHolder.scene.rotateZ(-Math.PI / 2);
     logoHolder.scene.scale.copy(new Vector3(45, 45, 45));
-
     return logoHolder.scene;
   }
 
@@ -301,7 +315,7 @@ export class Viewer extends React.Component {
 
   async componentDidMount() {
     this.font = await loadFont("helvetiker_bold.typeface.json");
-    this.addBase();
+    // this.addBase();
     this.createLinks();
     this.createInfo();
 
@@ -313,7 +327,6 @@ export class Viewer extends React.Component {
     // wadaPaav.scene.MA = true;
     wadaPaav.scene.receiveShadow = true;
     this.scene.add(wadaPaav.scene);
-
 
     // add phone
     const phone = (await loadModel(assetUrl + "model/phone/scene.gltf")) as {
@@ -355,27 +368,16 @@ export class Viewer extends React.Component {
       antialias: true,
       alpha: true,
     });
-    this.renderer.toneMapping = ReinhardToneMapping;
-    this.renderer.toneMappingExposure = 2.2;
+    // this.renderer.toneMapping = ReinhardToneMapping;
+    // this.renderer.toneMappingExposure = 2.2;
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setPixelRatio(window.devicePixelRatio);
 
     // this.scene.add(thelaBulb);awsq4d4w54r54rtrfggfffffffvhuijhgfdxcszassssssssssssssaa bbbbbbbbbbbb333333333333333~~!AAZG
 
-    if (this.isNight) {
-      this.bannerLight();
-      this.thelaLight();
-      this.streetLight();
-    } else {
-      const environment = new RoomEnvironment();
-      const pmremGenerator = new PMREMGenerator(this.renderer);
-      this.scene.environment = pmremGenerator.fromScene(environment).texture;
-
-      const hemiLight = new HemisphereLight(0xffffff, 0x444444, 0.5);
-      hemiLight.position.set(0, 20, 0);
-      hemiLight.castShadow = true;
-      this.scene.add(hemiLight);
-    }
+    //  this.bannerLight();
+    this.thelaLight();
+    this.streetLight();
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.listenToKeyEvents(window); // optional
@@ -388,9 +390,9 @@ export class Viewer extends React.Component {
     this.controls.maxPolarAngle = Math.PI - (Math.PI * 1.5) / 4;
 
     this.renderer.setAnimationLoop(this.animation.bind(this));
-    this.renderer.toneMapping = ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1;
-    this.renderer.outputEncoding = sRGBEncoding;
+    // this.renderer.toneMapping = ACESFilmicToneMapping;
+    // this.renderer.toneMappingExposure = 1;
+    // this.renderer.outputEncoding = sRGBEncoding;
 
     window.addEventListener("resize", this.onWindowResize.bind(this));
     window.addEventListener("pointermove", this.onPointerMove.bind(this));
@@ -404,6 +406,8 @@ export class Viewer extends React.Component {
     if (element) {
       element.parentNode?.removeChild(element);
     }
+
+    this.scene.add(this.groundMirror);
   }
 
   onPointerDown() {
@@ -419,7 +423,7 @@ export class Viewer extends React.Component {
       this.intersect();
 
       if (this.intersected) {
-        console.log(this.intersected.name);
+        // console.log(this.intersected.name);
         switch (this.intersected.name) {
           case "PROJECTS":
             new TWEEN.Tween(this.camera.position)
@@ -439,10 +443,7 @@ export class Viewer extends React.Component {
           case "runlola":
             //@ts-ignore
             window
-              .open(
-                "https://aniketwachakawade.com/examples/promaton",
-                "_blank"
-              )
+              .open("https://aniketwachakawade.com/examples/promaton", "_blank")
               .focus();
             break;
 
@@ -620,16 +621,13 @@ export class Viewer extends React.Component {
     this.controls.update();
     this.intersect();
     TWEEN.update();
-    console.log(this.camera.position);
+    // console.log(this.camera.position);
     this.renderer.render(this.scene, this.camera);
   }
 
   render() {
     return (
-      <canvas
-        id="viewer-3d"
-        style={{ background: this.isNight ? "rgba(0, 0, 0, 0.92)" : "" }}
-      />
+      <canvas id="viewer-3d" style={{ background: "rgba(0, 0, 0, 0.92)" }} />
     );
   }
 }
