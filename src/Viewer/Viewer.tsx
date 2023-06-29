@@ -21,6 +21,7 @@ import {
   PlaneGeometry,
   PointLight,
   Raycaster,
+  ReinhardToneMapping,
   ShapeGeometry,
   ShapePath,
   SphereGeometry,
@@ -39,6 +40,11 @@ import mixpanel from "mixpanel-browser";
 import { TextGeometry } from "../lib/TextGeometry";
 import TWEEN from "@tweenjs/tween.js";
 import { Reflector } from "../lib/Reflector.js";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "../lib/OutputPass.js";
+// import { GUI } from "../lib/lil-gui.module.min.js";
 
 mixpanel.init("af44aaa9f572d564af1baf30ee1b6b28", { debug: true });
 
@@ -64,6 +70,7 @@ export class Viewer extends React.Component {
   scene: Scene;
   controls: any;
   groundMirror: Reflector;
+  composer!: EffectComposer;
 
   constructor(props: {}) {
     super(props);
@@ -78,7 +85,7 @@ export class Viewer extends React.Component {
     this.scene.background = new Color(0x090909);
     // this.scene.fog = new Fog(0xa8d1ed, 1, 10000);
 
-    const geometry = new CircleGeometry(10000, 256);
+    const geometry = new CircleGeometry(5000, 256);
     this.groundMirror = new Reflector(geometry, {
       clipBias: 0.003,
       textureWidth: window.innerWidth * window.devicePixelRatio,
@@ -120,14 +127,10 @@ export class Viewer extends React.Component {
 
   thelaLight() {
     const sphere = new SphereGeometry(14, 16, 8);
-
-    //lights
-
-    const light1 = new PointLight(0xeb7f00, 8, 900, 2);
+    const light1 = new PointLight(0xeb7f00, 8, 1000);
     light1.add(new Mesh(sphere, new MeshBasicMaterial({ color: 0xff9619 })));
     light1.position.set(5, 594, 5.5);
     this.scene.add(light1);
-
   }
 
   bannerLight() {
@@ -177,6 +180,7 @@ export class Viewer extends React.Component {
       }
     }
 
+  
     return group;
   }
 
@@ -209,6 +213,8 @@ export class Viewer extends React.Component {
 
     const model = (await loadModel(path)) as { paths: Array<ShapePath> };
     const modelLogo = this.createLogoFromPath(model.paths, center);
+
+
     modelLogo.rotateX(Math.PI / 2);
     modelLogo.scale.copy(new Vector3(0.071, 0.071, 0.071));
     modelLogo.position.copy(new Vector3(-0.85, 0.2, -0.85));
@@ -373,10 +379,27 @@ export class Viewer extends React.Component {
     this.controls.maxDistance = 2000;
     this.controls.maxPolarAngle = Math.PI - (Math.PI * 1.5) / 4;
 
-    this.renderer.setAnimationLoop(this.animation.bind(this));
-    // this.renderer.toneMapping = ACESFilmicToneMapping;
-    // this.renderer.toneMappingExposure = 1;
-    // this.renderer.outputEncoding = sRGBEncoding;
+    // this.renderer.setAnimationLoop(this.animation.bind(this));
+
+    const renderScene = new RenderPass(this.scene, this.camera);
+
+    const bloomPass = new UnrealBloomPass(
+      new Vector2(window.innerWidth, window.innerHeight),
+      1.5,
+      0.4,
+      0.85
+    );
+    bloomPass.threshold = 0.95;
+    bloomPass.strength = 0.25;
+    bloomPass.radius = 0.1;
+
+    const outputPass = new OutputPass(ReinhardToneMapping);
+    outputPass.toneMappingExposure = 1;
+
+    this.composer = new EffectComposer(this.renderer);
+    this.composer.addPass(renderScene);
+    this.composer.addPass(bloomPass);
+    this.composer.addPass(outputPass);
 
     window.addEventListener("resize", this.onWindowResize.bind(this));
     window.addEventListener("pointermove", this.onPointerMove.bind(this));
@@ -392,6 +415,41 @@ export class Viewer extends React.Component {
     }
 
     this.scene.add(this.groundMirror);
+    this.animate();
+
+    // const gui = new GUI();
+
+    // 		const bloomFolder = gui.addFolder( 'bloom' );
+
+    //     //@ts-ignore
+    // 		bloomFolder.add( params, 'threshold', 0.0, 1.0 ).onChange( function ( value ) {
+
+    // 			bloomPass.threshold = Number( value );
+
+    // 		} );
+
+    //      //@ts-ignore
+    // 		bloomFolder.add( params, 'strength', 0.0, 3.0 ).onChange( function ( value ) {
+
+    // 			bloomPass.strength = Number( value );
+
+    // 		} );
+
+    //      //@ts-ignore
+    // 		gui.add( params, 'radius', 0.0, 1.0 ).step( 0.01 ).onChange( function ( value ) {
+
+    // 			bloomPass.radius = Number( value );
+
+    // 		} );
+
+    // 		const toneMappingFolder = gui.addFolder( 'tone mapping' );
+
+    //      //@ts-ignore
+    // 		toneMappingFolder.add( params, 'exposure', 0.1, 2 ).onChange( function ( value ) {
+
+    // 			outputPass.toneMappingExposure = Math.pow( value, 4.0 );
+
+    // 		} );
   }
 
   onPointerDown() {
@@ -492,6 +550,7 @@ export class Viewer extends React.Component {
     this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.composer.setSize(window.innerWidth, window.innerHeight);
   }
 
   setIsoView() {
@@ -601,12 +660,12 @@ export class Viewer extends React.Component {
     }
   }
 
-  animation() {
+  animate() {
+    requestAnimationFrame(this.animate.bind(this));
     this.controls.update();
     this.intersect();
     TWEEN.update();
-    // console.log(this.camera.position);
-    this.renderer.render(this.scene, this.camera);
+    this.composer.render();
   }
 
   render() {
