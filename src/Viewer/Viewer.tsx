@@ -8,6 +8,7 @@ import React from "react";
 import {
   BackSide,
   BoxGeometry,
+  CircleGeometry,
   Color,
   DoubleSide,
   Group,
@@ -77,7 +78,7 @@ export class Viewer extends React.Component {
     this.scene.background = new Color(0x090909);
     // this.scene.fog = new Fog(0xa8d1ed, 1, 10000);
 
-    const geometry = new PlaneGeometry(10000, 10000);
+    const geometry = new CircleGeometry(10000, 256);
     this.groundMirror = new Reflector(geometry, {
       clipBias: 0.003,
       textureWidth: window.innerWidth * window.devicePixelRatio,
@@ -123,37 +124,10 @@ export class Viewer extends React.Component {
     //lights
 
     const light1 = new PointLight(0xeb7f00, 8, 900, 2);
-    light1.add(new Mesh(sphere, new MeshBasicMaterial({ color: 0xff8a00 })));
+    light1.add(new Mesh(sphere, new MeshBasicMaterial({ color: 0xff9619 })));
     light1.position.set(5, 594, 5.5);
     this.scene.add(light1);
 
-    // // Balb inside thela down
-    // const thelaBulb = new SpotLight(0xffff00, 5, 500);
-    // thelaBulb.position.set(0, 600, 0);
-    // this.createSpotLight(
-    //   new Vector3(-50, 575, 0),
-    //   new Vector3(50, 575, 0),
-    //   100,
-    //   50
-    // );
-    // this.createSpotLight(
-    //   new Vector3(50, 575, 0),
-    //   new Vector3(-50, 575, 0),
-    //   100,
-    //   50
-    // );
-    // this.createSpotLight(
-    //   new Vector3(0, 575, 50),
-    //   new Vector3(0, 575, -50),
-    //   100,
-    //   50
-    // );
-    // this.createSpotLight(
-    //   new Vector3(0, 575, -50),
-    //   new Vector3(0, 575, 50),
-    //   100,
-    //   50
-    // );
   }
 
   bannerLight() {
@@ -169,9 +143,9 @@ export class Viewer extends React.Component {
   }
 
   streetLight() {
-    const sphere = new BoxGeometry(85, 20, 70);
-    const light1 = new PointLight(0xacf0f2, 5, 8000, 2);
-    light1.add(new Mesh(sphere, new MeshBasicMaterial({ color: 0xacf0f2 })));
+    const sphere = new BoxGeometry(85, 15, 70);
+    const light1 = new PointLight(0xacf0f2, 3);
+    light1.add(new Mesh(sphere, new MeshBasicMaterial({ color: 0xdbfeff })));
     light1.position.set(-95, 1625, -586);
     this.scene.add(light1);
   }
@@ -318,6 +292,16 @@ export class Viewer extends React.Component {
     // this.addBase();
     this.createLinks();
     this.createInfo();
+
+    // add badli for water
+    const badli = (await loadModel(assetUrl + "model/gada/badli.gltf")) as {
+      scene: Scene;
+    };
+    badli.scene.position.set(-120, 0, 500);
+    badli.scene.castShadow = false;
+    // wadaPaav.scene.MA = true;
+    badli.scene.receiveShadow = false;
+    this.scene.add(badli.scene);
 
     // add gada
     const wadaPaav = (await loadModel(assetUrl + "model/gada/scene.gltf")) as {
