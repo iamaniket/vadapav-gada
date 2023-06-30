@@ -12,6 +12,7 @@ import {
   Color,
   DoubleSide,
   Group,
+  Material,
   Mesh,
   MeshBasicMaterial,
   MeshLambertMaterial,
@@ -20,6 +21,7 @@ import {
   PerspectiveCamera,
   PlaneGeometry,
   PointLight,
+  RGBAFormat,
   Raycaster,
   ReinhardToneMapping,
   ShapeGeometry,
@@ -27,6 +29,8 @@ import {
   SphereGeometry,
   SpotLight,
   Vector2,
+  WebGLRenderTarget,
+  sRGBEncoding,
 } from "three";
 import { Box3 } from "three/src/math/Box3";
 import { Vector3 } from "three/src/math/Vector3";
@@ -57,6 +61,7 @@ const assetUrl = "";
 
 export class Viewer extends React.Component {
   font: any;
+  oldMaterial: Material | undefined = undefined;
   raycaster = new Raycaster();
   pointer = new Vector2();
   drag = false;
@@ -82,7 +87,7 @@ export class Viewer extends React.Component {
     );
     this.scene = new Scene();
 
-    this.scene.background = new Color(0x090909);
+    this.scene.background = new Color(0x000000);
     // this.scene.fog = new Fog(0xa8d1ed, 1, 10000);
 
     const geometry = new CircleGeometry(5000, 256);
@@ -180,7 +185,12 @@ export class Viewer extends React.Component {
       }
     }
 
-  
+    const sphere = new SphereGeometry(14, 16, 8);
+    const light1 = new PointLight(color, 5, 1055);
+     light1.add(new Mesh(sphere, new MeshBasicMaterial({ color: color })));
+    light1.position.set(center.x + 10, center.y , center.z );
+    // this.scene.add(light1);
+
     return group;
   }
 
@@ -212,12 +222,12 @@ export class Viewer extends React.Component {
     box.getCenter(center);
 
     const model = (await loadModel(path)) as { paths: Array<ShapePath> };
-    const modelLogo = this.createLogoFromPath(model.paths, center);
-
+    const modelLogo = this.createLogoFromPath(model.paths, scene.position);
 
     modelLogo.rotateX(Math.PI / 2);
     modelLogo.scale.copy(new Vector3(0.071, 0.071, 0.071));
     modelLogo.position.copy(new Vector3(-0.85, 0.2, -0.85));
+
     scene.add(modelLogo);
   }
 
@@ -228,6 +238,10 @@ export class Viewer extends React.Component {
     )) as {
       scene: Scene;
     };
+    (logoHolder.scene.children[0] as Mesh).material = new MeshBasicMaterial({
+      color: 0xffffff,
+    });
+
     logoHolder.scene.castShadow = true;
     logoHolder.scene.rotateX(Math.PI / 2);
     logoHolder.scene.rotateZ(-Math.PI / 2);
@@ -365,7 +379,7 @@ export class Viewer extends React.Component {
 
     // this.scene.add(thelaBulb);awsq4d4w54r54rtrfggfffffffvhuijhgfdxcszassssssssssssssaa bbbbbbbbbbbb333333333333333~~!AAZG
 
-    //  this.bannerLight();
+    this.bannerLight();
     this.thelaLight();
     this.streetLight();
 
@@ -390,13 +404,26 @@ export class Viewer extends React.Component {
       0.85
     );
     bloomPass.threshold = 0.95;
-    bloomPass.strength = 0.25;
+    bloomPass.strength = 0.2;
     bloomPass.radius = 0.1;
 
     const outputPass = new OutputPass(ReinhardToneMapping);
-    outputPass.toneMappingExposure = 1;
+    outputPass.toneMappingExposure = 0.5;
 
-    this.composer = new EffectComposer(this.renderer);
+    const gl = document.createElement("canvas").getContext("webgl2");
+
+    let target;
+    if (gl) {
+      target = new WebGLRenderTarget(window.innerWidth, window.innerHeight, {
+        format: RGBAFormat,
+        encoding: sRGBEncoding,
+      });
+      target.samples = 8;
+      this.composer = new EffectComposer(this.renderer, target);
+    } else {
+      this.composer = new EffectComposer(this.renderer);
+    }
+
     this.composer.addPass(renderScene);
     this.composer.addPass(bloomPass);
     this.composer.addPass(outputPass);
@@ -629,16 +656,11 @@ export class Viewer extends React.Component {
       this.intersected = parrentNode.children[1] as Mesh & {
         currentHex: number;
       };
-
       this.intersected.name = parrentNode.name;
 
       if (!isMobile()) {
-        //@ts-ignore
-        const material = this.intersected.material as MeshBasicMaterial;
-
-        this.intersected.currentHex = material.color.getHex();
-
-        material.color.setHex(0x0045a6);
+        this.oldMaterial = (this.intersected.material as Material).clone();
+        this.intersected.material = new MeshBasicMaterial({ color: 0xffffff });
       }
     }
   }
@@ -654,8 +676,9 @@ export class Viewer extends React.Component {
     } else {
       if (this.intersected) {
         //@ts-ignore
-        this.intersected.material.color.setHex(0xffffff);
+        this.intersected.material = this.oldMaterial;
         this.intersected = undefined;
+        // (logoHolder.scene.children[0] as Mesh).material = new MeshBasicMaterial({ color: 0xF0F0F0 });
       }
     }
   }
@@ -670,7 +693,7 @@ export class Viewer extends React.Component {
 
   render() {
     return (
-      <canvas id="viewer-3d" style={{ background: "rgba(0, 0, 0, 0.92)" }} />
+      <canvas id="viewer-3d" style={{ background: "rgba(0, 0, 0, 0)" }} />
     );
   }
 }
