@@ -59,7 +59,13 @@ mixpanel.track("Website Visit", {
 const assetUrl = "";
 // "https://raw.githubusercontent.com/iamaniket/vadapav-gada/main/public/";
 
-export class Viewer extends React.Component {
+interface IProps {}
+
+interface IState {
+  isNight: boolean;
+}
+
+export class Viewer extends React.Component<IProps, IState> {
   font: any;
   oldMaterial: Material | undefined = undefined;
   raycaster = new Raycaster();
@@ -77,8 +83,12 @@ export class Viewer extends React.Component {
   groundMirror: Reflector;
   composer!: EffectComposer;
 
-  constructor(props: {}) {
+  constructor(props: {}, state: { isNight: boolean }) {
     super(props);
+
+    this.state = {
+      isNight: true,
+    };
     this.camera = new PerspectiveCamera(
       70,
       window.innerWidth / window.innerHeight,
@@ -87,7 +97,9 @@ export class Viewer extends React.Component {
     );
     this.scene = new Scene();
 
-    this.scene.background = new Color(0x000000);
+    this.scene.background = this.state.isNight
+      ? new Color(0x000000)
+      : new Color(0xffffff);
     // this.scene.fog = new Fog(0xa8d1ed, 1, 10000);
 
     const geometry = new CircleGeometry(5000, 256);
@@ -132,14 +144,14 @@ export class Viewer extends React.Component {
 
   thelaLight() {
     const sphere = new SphereGeometry(14, 16, 8);
-    const light1 = new PointLight(0xeb7f00, 8, 1000);
-    light1.add(new Mesh(sphere, new MeshBasicMaterial({ color: 0xff9619 })));
+    const light1 = new PointLight(0xfc0fc0, 5, 1000);
+    light1.add(new Mesh(sphere, new MeshBasicMaterial({ color: 0xfc0fc0 })));
     light1.position.set(5, 594, 5.5);
     this.scene.add(light1);
   }
 
   bannerLight() {
-    const bulb = new SpotLight(0xffffff, 0.5, 2100);
+    const bulb = new SpotLight(0xff0000, 0.1);
     bulb.position.set(800, 0, 800);
     this.scene.add(bulb);
     const targetObject = new Object3D();
@@ -152,8 +164,8 @@ export class Viewer extends React.Component {
 
   streetLight() {
     const sphere = new BoxGeometry(85, 15, 70);
-    const light1 = new PointLight(0xacf0f2, 3);
-    light1.add(new Mesh(sphere, new MeshBasicMaterial({ color: 0xdbfeff })));
+    const light1 = new PointLight(0xeb7f11, 6);
+    light1.add(new Mesh(sphere, new MeshBasicMaterial({ color: 0xeb7f00 })));
     light1.position.set(-95, 1625, -586);
     this.scene.add(light1);
   }
@@ -187,8 +199,8 @@ export class Viewer extends React.Component {
 
     const sphere = new SphereGeometry(14, 16, 8);
     const light1 = new PointLight(color, 5, 1055);
-     light1.add(new Mesh(sphere, new MeshBasicMaterial({ color: color })));
-    light1.position.set(center.x + 10, center.y , center.z );
+    light1.add(new Mesh(sphere, new MeshBasicMaterial({ color: color })));
+    light1.position.set(center.x + 10, center.y, center.z);
     // this.scene.add(light1);
 
     return group;
@@ -257,22 +269,6 @@ export class Viewer extends React.Component {
     await this.addText(textHolder1, "PROJECTS");
     this.scene.add(textHolder1);
     this.selectable.push(textHolder1);
-
-    // EXPERIENCE
-    // const textHolder2 = await this.createLogoHolder("nameholder");
-    // textHolder2.name = "EXPERIENCE";
-    // textHolder2.position.copy(new Vector3(310, 100, -215));
-    // await this.addText(textHolder2, "Location");
-    // this.scene.add(textHolder2);
-    // this.selectable.push(textHolder2);
-
-    // // EXPERIENCE
-    // const textHolder3 = await this.createLogoHolder("nameholder");
-    // textHolder3.name = "CREDITS";
-    // textHolder3.position.copy(new Vector3(310, 80, -215));
-    // await this.addText(textHolder3, "CREDITS");
-    // this.scene.add(textHolder3);
-    // this.selectable.push(textHolder3);
   }
 
   async createLinks() {
@@ -323,6 +319,16 @@ export class Viewer extends React.Component {
     badli.scene.receiveShadow = false;
     this.scene.add(badli.scene);
 
+    // add badli for water
+    const badli2 = (await loadModel(assetUrl + "model/gada/badli.gltf")) as {
+      scene: Scene;
+    };
+    badli2.scene.position.set(-120, 680, 300);
+    badli2.scene.castShadow = false;
+    // wadaPaav.scene.MA = true;
+    badli2.scene.receiveShadow = false;
+    this.scene.add(badli2.scene);
+
     // add gada
     const wadaPaav = (await loadModel(assetUrl + "model/gada/scene.gltf")) as {
       scene: Scene;
@@ -372,12 +378,8 @@ export class Viewer extends React.Component {
       antialias: true,
       alpha: true,
     });
-    // this.renderer.toneMapping = ReinhardToneMapping;
-    // this.renderer.toneMappingExposure = 2.2;
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setPixelRatio(window.devicePixelRatio);
-
-    // this.scene.add(thelaBulb);awsq4d4w54r54rtrfggfffffffvhuijhgfdxcszassssssssssssssaa bbbbbbbbbbbb333333333333333~~!AAZG
 
     this.bannerLight();
     this.thelaLight();
@@ -386,7 +388,7 @@ export class Viewer extends React.Component {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.listenToKeyEvents(window); // optional
 
-    this.controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+    this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.05;
     this.controls.screenSpacePanning = false;
     this.controls.minDistance = 0;
@@ -684,16 +686,34 @@ export class Viewer extends React.Component {
   }
 
   animate() {
+    this.scene.background = this.state.isNight
+      ? new Color(0x000000)
+      : new Color(0xffffff);
     requestAnimationFrame(this.animate.bind(this));
     this.controls.update();
     this.intersect();
     TWEEN.update();
-    this.composer.render();
+    this.renderer.render(this.scene, this.camera);
+    // this.state.isNight?  this.composer.render() :
   }
 
   render() {
     return (
-      <canvas id="viewer-3d" style={{ background: "rgba(0, 0, 0, 0)" }} />
+      <>
+        <canvas id="viewer-3d" />
+        <button
+          className="float"
+          onClick={() => {
+            this.setState({ isNight: this.state.isNight ? false : true });
+          }}
+        >
+          <img
+            src={this.state.isNight ? "day.png" : "night.png"}
+            className="icon"
+            alt=""
+          />
+        </button>
+      </>
     );
   }
 }
