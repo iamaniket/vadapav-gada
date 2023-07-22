@@ -195,7 +195,7 @@ export class Viewer extends React.Component<IProps, IState> {
 
   streetLight(lightHolder: Object3D) {
     const sphere = new BoxGeometry(85, 15, 70);
-    const light1 = new PointLight(0xeb7f11, 6);
+    const light1 = new PointLight(0xeb7f11, 4);
     light1.add(new Mesh(sphere, new MeshBasicMaterial({ color: 0xeb7f00 })));
     light1.position.set(-95, 1625, -586);
     lightHolder.add(light1);
@@ -739,7 +739,7 @@ export class Viewer extends React.Component<IProps, IState> {
                 // Update Scene after chnage
                 this.scene.background = this.state.isNight
                   ? new Color(0x000000)
-                  : new Color(0xffffff);
+                  : new Color(0xbbbbbb);
                 // remove all lights
                 this.lights.remove(...this.lights.children);
                 this.updateLights();
