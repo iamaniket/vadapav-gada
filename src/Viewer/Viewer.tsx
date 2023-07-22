@@ -10,6 +10,7 @@ import {
   BoxGeometry,
   CircleGeometry,
   Color,
+  DirectionalLight,
   DoubleSide,
   Group,
   Material,
@@ -28,6 +29,7 @@ import {
   ShapePath,
   SphereGeometry,
   SpotLight,
+  SpotLightHelper,
   Vector2,
   WebGLRenderTarget,
   sRGBEncoding,
@@ -79,6 +81,7 @@ export class Viewer extends React.Component<IProps, IState> {
   sampleBordPosition: Vector3 = new Vector3(-550, 0, -670);
   camera: PerspectiveCamera;
   scene: Scene;
+  lights: Object3D;
   controls: any;
   groundMirror: Reflector;
   composer!: EffectComposer;
@@ -96,6 +99,8 @@ export class Viewer extends React.Component<IProps, IState> {
       10000
     );
     this.scene = new Scene();
+    this.lights = new Object3D();
+    this.scene.add(this.lights);
 
     this.scene.background = this.state.isNight
       ? new Color(0x000000)
@@ -142,32 +147,58 @@ export class Viewer extends React.Component<IProps, IState> {
     spotLight.target.updateMatrixWorld();
   }
 
-  thelaLight() {
+  addDirectionaLight(lightHolder: Object3D) {
+    const dirLight = new DirectionalLight(0xffffff, 2.2);
+    lightHolder.add(dirLight);
+    dirLight.position.set(900, 900, 0);
+    dirLight.castShadow = true;
+    dirLight.shadow.camera.top = 2;
+    dirLight.shadow.camera.bottom = -2;
+    dirLight.shadow.camera.left = -2;
+    dirLight.shadow.camera.right = 2;
+    dirLight.shadow.camera.near = 0.1;
+    dirLight.shadow.camera.far = 40;
+
+    const dirLight2 = new DirectionalLight(0xffffff, 2.2);
+    lightHolder.add(dirLight2);
+    dirLight2.position.set(-900, 900, 0);
+    dirLight2.castShadow = true;
+    dirLight2.shadow.camera.top = 2;
+    dirLight2.shadow.camera.bottom = -2;
+    dirLight2.shadow.camera.left = -2;
+    dirLight2.shadow.camera.right = 2;
+    dirLight2.shadow.camera.near = 0.1;
+    dirLight2.shadow.camera.far = 40;
+  }
+
+  thelaLight(lightHolder: Object3D) {
     const sphere = new SphereGeometry(14, 16, 8);
     const light1 = new PointLight(0xfc0fc0, 5, 1000);
     light1.add(new Mesh(sphere, new MeshBasicMaterial({ color: 0xfc0fc0 })));
     light1.position.set(5, 594, 5.5);
-    this.scene.add(light1);
+    lightHolder.add(light1);
   }
 
-  bannerLight() {
-    const bulb = new SpotLight(0xff0000, 0.1);
-    bulb.position.set(800, 0, 800);
-    this.scene.add(bulb);
+  bannerLight(lightHolder: Object3D) {
+    const bulb = new SpotLight(0xFFFFFF, 2, 500);
+    bulb.position.set(650, 0, 0);
+    lightHolder.add(bulb);
     const targetObject = new Object3D();
-    this.scene.add(targetObject);
+    lightHolder.add(targetObject);
     targetObject.position.set(0, 0, 0);
     targetObject.updateMatrix();
     bulb.target = targetObject;
     bulb.target.updateMatrixWorld();
+
+    // lightHolder.add(new SpotLightHelper(bulb, 0xff0000));
   }
 
-  streetLight() {
+  streetLight(lightHolder: Object3D) {
     const sphere = new BoxGeometry(85, 15, 70);
     const light1 = new PointLight(0xeb7f11, 6);
     light1.add(new Mesh(sphere, new MeshBasicMaterial({ color: 0xeb7f00 })));
     light1.position.set(-95, 1625, -586);
-    this.scene.add(light1);
+    lightHolder.add(light1);
   }
 
   createLogoFromPath(paths: Array<ShapePath>, center: Vector3): Group {
@@ -182,8 +213,6 @@ export class Viewer extends React.Component<IProps, IState> {
         color: path.color,
         side: BackSide,
       });
-
-      // console.log(path.color);
 
       color.set(path.color);
 
@@ -381,9 +410,7 @@ export class Viewer extends React.Component<IProps, IState> {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setPixelRatio(window.devicePixelRatio);
 
-    this.bannerLight();
-    this.thelaLight();
-    this.streetLight();
+    this.updateLights();
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.listenToKeyEvents(window); // optional
@@ -392,10 +419,8 @@ export class Viewer extends React.Component<IProps, IState> {
     this.controls.dampingFactor = 0.05;
     this.controls.screenSpacePanning = false;
     this.controls.minDistance = 0;
-    this.controls.maxDistance = 2000;
-    this.controls.maxPolarAngle = Math.PI - (Math.PI * 1.5) / 4;
-
-    // this.renderer.setAnimationLoop(this.animation.bind(this));
+    this.controls.maxDistance = 2600;
+    this.controls.maxPolarAngle = Math.PI - (Math.PI * 1.5) / 3.7;
 
     const renderScene = new RenderPass(this.scene, this.camera);
 
@@ -481,6 +506,16 @@ export class Viewer extends React.Component<IProps, IState> {
     // 		} );
   }
 
+  updateLights() {
+    if (this.state.isNight) {
+      this.bannerLight(this.lights);
+      this.thelaLight(this.lights);
+      this.streetLight(this.lights);
+    } else {
+      this.addDirectionaLight(this.lights);
+    }
+  }
+
   onPointerDown() {
     this.drag = false;
   }
@@ -490,11 +525,8 @@ export class Viewer extends React.Component<IProps, IState> {
       this.drag = true;
       this.pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
       this.pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
       this.intersect();
-
       if (this.intersected) {
-        // console.log(this.intersected.name);
         switch (this.intersected.name) {
           case "PROJECTS":
             new TWEEN.Tween(this.camera.position)
@@ -686,9 +718,6 @@ export class Viewer extends React.Component<IProps, IState> {
   }
 
   animate() {
-    this.scene.background = this.state.isNight
-      ? new Color(0x000000)
-      : new Color(0xffffff);
     requestAnimationFrame(this.animate.bind(this));
     this.controls.update();
     this.intersect();
@@ -704,7 +733,18 @@ export class Viewer extends React.Component<IProps, IState> {
         <button
           className="float"
           onClick={() => {
-            this.setState({ isNight: this.state.isNight ? false : true });
+            this.setState(
+              { isNight: this.state.isNight ? false : true },
+              () => {
+                // Update Scene after chnage
+                this.scene.background = this.state.isNight
+                  ? new Color(0x000000)
+                  : new Color(0xffffff);
+                // remove all lights
+                this.lights.remove(...this.lights.children);
+                this.updateLights();
+              }
+            );
           }}
         >
           <img
