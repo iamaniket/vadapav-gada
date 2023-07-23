@@ -29,7 +29,6 @@ import {
   ShapePath,
   SphereGeometry,
   SpotLight,
-  SpotLightHelper,
   Vector2,
   WebGLRenderTarget,
   sRGBEncoding,
@@ -171,6 +170,12 @@ export class Viewer extends React.Component<IProps, IState> {
     dirLight2.shadow.camera.far = 40;
   }
 
+  paymentLight(lightHolder: Object3D) {
+    const light1 = new PointLight(0xffffff, 4, 500);
+    light1.position.set(290, 400, 330);
+    lightHolder.add(light1);
+  }
+
   thelaLight(lightHolder: Object3D) {
     const sphere = new SphereGeometry(14, 16, 8);
     const light1 = new PointLight(0xfc0fc0, 5, 1000);
@@ -180,8 +185,8 @@ export class Viewer extends React.Component<IProps, IState> {
   }
 
   bannerLight(lightHolder: Object3D) {
-    const bulb = new SpotLight(0xFFFFFF, 2, 500);
-    bulb.position.set(650, 0, 0);
+    const bulb = new SpotLight(0xffffff, 6, 400);
+    bulb.position.set(650, 400, 0);
     lightHolder.add(bulb);
     const targetObject = new Object3D();
     lightHolder.add(targetObject);
@@ -515,6 +520,7 @@ export class Viewer extends React.Component<IProps, IState> {
 
   updateLights() {
     if (this.state.isNight) {
+      this.paymentLight(this.lights);
       this.bannerLight(this.lights);
       this.thelaLight(this.lights);
       this.streetLight(this.lights);
@@ -544,7 +550,7 @@ export class Viewer extends React.Component<IProps, IState> {
             break;
           case "PROJECTS":
             new TWEEN.Tween(this.camera.position)
-              .to({ x: -1339, y: 115, z: -2211 }, 1500) 
+              .to({ x: -1339, y: 115, z: -2211 }, 1500)
               .start();
             mixpanel.track("Projects", {});
             break;
@@ -747,6 +753,7 @@ export class Viewer extends React.Component<IProps, IState> {
         <button
           className="float"
           onClick={() => {
+            mixpanel.track("mode toggle", {});
             this.setState(
               { isNight: this.state.isNight ? false : true },
               () => {
