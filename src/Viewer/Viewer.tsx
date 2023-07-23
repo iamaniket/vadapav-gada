@@ -530,7 +530,7 @@ export class Viewer extends React.Component<IProps, IState> {
         switch (this.intersected.name) {
           case "PROJECTS":
             new TWEEN.Tween(this.camera.position)
-              .to({ x: -783, y: 73, z: -1673 }, 1000)
+              .to({ x: -1339, y: 115, z: -2211 }, 1500) 
               .start();
             mixpanel.track("Projects", {});
             break;
