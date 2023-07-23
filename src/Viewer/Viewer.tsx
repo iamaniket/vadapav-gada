@@ -298,6 +298,13 @@ export class Viewer extends React.Component<IProps, IState> {
     await this.addText(textHolder1, "PROJECTS");
     this.scene.add(textHolder1);
     this.selectable.push(textHolder1);
+    // CREDITS
+    const textHolder2 = await this.createLogoHolder("nameholder");
+    textHolder2.name = "CREDITS";
+    textHolder2.position.copy(new Vector3(310, 100, -215));
+    await this.addText(textHolder2, "CREDITS");
+    this.scene.add(textHolder2);
+    this.selectable.push(textHolder2);
   }
 
   async createLinks() {
@@ -528,6 +535,13 @@ export class Viewer extends React.Component<IProps, IState> {
       this.intersect();
       if (this.intersected) {
         switch (this.intersected.name) {
+          case "CREDITS":
+            mixpanel.track("Credits", {});
+            //@ts-ignore
+            window
+              .open("https://sketchfab.com/mrinalkukreti", "_blank")
+              .focus();
+            break;
           case "PROJECTS":
             new TWEEN.Tween(this.camera.position)
               .to({ x: -1339, y: 115, z: -2211 }, 1500) 
