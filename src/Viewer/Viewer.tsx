@@ -25,10 +25,12 @@ import {
   RGBAFormat,
   Raycaster,
   ReinhardToneMapping,
+  RepeatWrapping,
   ShapeGeometry,
   ShapePath,
   SphereGeometry,
   SpotLight,
+  TextureLoader,
   Vector2,
   WebGLRenderTarget,
   sRGBEncoding,
@@ -47,9 +49,13 @@ import TWEEN from "@tweenjs/tween.js";
 import { Reflector } from "../lib/Reflector.js";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
-import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
+import { FXAAShader } from "three/examples/jsm/shaders/FXAAShader.js";
 import { OutputPass } from "../lib/OutputPass.js";
-// import { GUI } from "../lib/lil-gui.module.min.js";
+
+// @ts-ignore gui
+import GUI from "lil-gui";
 
 mixpanel.init("af44aaa9f572d564af1baf30ee1b6b28", { debug: true });
 
@@ -84,6 +90,9 @@ export class Viewer extends React.Component<IProps, IState> {
   controls: any;
   groundMirror: Reflector;
   composer!: EffectComposer;
+  effectFXAA!: ShaderPass;
+  outlinePass!: OutlinePass;
+  selectedObjects: Array<Object3D> = [];
 
   constructor(props: {}, state: { isNight: boolean }) {
     super(props);
@@ -171,7 +180,7 @@ export class Viewer extends React.Component<IProps, IState> {
   }
 
   paymentLight(lightHolder: Object3D) {
-    const light1 = new PointLight(0xffffff, 4, 500);
+    const light1 = new PointLight(0xffffff, 6, 500);
     light1.position.set(290, 400, 330);
     lightHolder.add(light1);
   }
@@ -185,8 +194,8 @@ export class Viewer extends React.Component<IProps, IState> {
   }
 
   bannerLight(lightHolder: Object3D) {
-    const bulb = new SpotLight(0xffffff, 6, 400);
-    bulb.position.set(650, 400, 0);
+    const bulb = new SpotLight(0xffffff, 0.8);
+    bulb.position.set(650, 200, 1000);
     lightHolder.add(bulb);
     const targetObject = new Object3D();
     lightHolder.add(targetObject);
@@ -393,13 +402,15 @@ export class Viewer extends React.Component<IProps, IState> {
 
     // add QR code
     const qr = (await loadModel(assetUrl + "model/qr.glb")) as { scene: Scene };
+    qr.scene.name = "payment"
     qr.scene.castShadow = true;
     phone.scene.receiveShadow = true;
     // qr.scene.rotateX(Math.PI / 2);
-    qr.scene.rotateY(Math.PI - Math.PI / 10);
+   // qr.scene.rotateY(Math.PI - Math.PI / 10);
     qr.scene.scale.copy(new Vector3(6, 6, 6));
     qr.scene.position.copy(this.qrPosition);
     this.scene.add(qr.scene);
+    this.selectable.push(qr.scene);
 
     // add sample work bord
     const sampleBord = (await loadModel(
@@ -436,16 +447,6 @@ export class Viewer extends React.Component<IProps, IState> {
 
     const renderScene = new RenderPass(this.scene, this.camera);
 
-    const bloomPass = new UnrealBloomPass(
-      new Vector2(window.innerWidth, window.innerHeight),
-      1.5,
-      0.4,
-      0.85
-    );
-    bloomPass.threshold = 0.95;
-    bloomPass.strength = 0.2;
-    bloomPass.radius = 0.1;
-
     const outputPass = new OutputPass(ReinhardToneMapping);
     outputPass.toneMappingExposure = 0.5;
 
@@ -464,8 +465,28 @@ export class Viewer extends React.Component<IProps, IState> {
     }
 
     this.composer.addPass(renderScene);
-    this.composer.addPass(bloomPass);
-    this.composer.addPass(outputPass);
+    // this.composer.addPass( outputPass );
+
+    this.outlinePass = new OutlinePass(
+      new Vector2(window.innerWidth, window.innerHeight),
+      this.scene,
+      this.camera
+    );
+    this.composer.addPass(this.outlinePass);
+
+    const textureLoader = new TextureLoader();
+    textureLoader.load("textures/tri_pattern.jpg", (texture) => {
+      this.outlinePass.patternTexture = texture;
+      texture.wrapS = RepeatWrapping;
+      texture.wrapT = RepeatWrapping;
+    });
+
+    this.effectFXAA = new ShaderPass(FXAAShader);
+    this.effectFXAA.uniforms["resolution"].value.set(
+      1 / window.innerWidth,
+      1 / window.innerHeight
+    );
+    this.composer.addPass(this.effectFXAA);
 
     window.addEventListener("resize", this.onWindowResize.bind(this));
     window.addEventListener("pointermove", this.onPointerMove.bind(this));
@@ -482,40 +503,6 @@ export class Viewer extends React.Component<IProps, IState> {
 
     this.scene.add(this.groundMirror);
     this.animate();
-
-    // const gui = new GUI();
-
-    // 		const bloomFolder = gui.addFolder( 'bloom' );
-
-    //     //@ts-ignore
-    // 		bloomFolder.add( params, 'threshold', 0.0, 1.0 ).onChange( function ( value ) {
-
-    // 			bloomPass.threshold = Number( value );
-
-    // 		} );
-
-    //      //@ts-ignore
-    // 		bloomFolder.add( params, 'strength', 0.0, 3.0 ).onChange( function ( value ) {
-
-    // 			bloomPass.strength = Number( value );
-
-    // 		} );
-
-    //      //@ts-ignore
-    // 		gui.add( params, 'radius', 0.0, 1.0 ).step( 0.01 ).onChange( function ( value ) {
-
-    // 			bloomPass.radius = Number( value );
-
-    // 		} );
-
-    // 		const toneMappingFolder = gui.addFolder( 'tone mapping' );
-
-    //      //@ts-ignore
-    // 		toneMappingFolder.add( params, 'exposure', 0.1, 2 ).onChange( function ( value ) {
-
-    // 			outputPass.toneMappingExposure = Math.pow( value, 4.0 );
-
-    // 		} );
   }
 
   updateLights() {
@@ -632,6 +619,10 @@ export class Viewer extends React.Component<IProps, IState> {
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.composer.setSize(window.innerWidth, window.innerHeight);
+    this.effectFXAA.uniforms["resolution"].value.set(
+      1 / window.innerWidth,
+      1 / window.innerHeight
+    );
   }
 
   setIsoView() {
@@ -667,6 +658,9 @@ export class Viewer extends React.Component<IProps, IState> {
   }
 
   actOnIntersection(object: Object3D, isClick = false) {
+
+    console.log(object.name)
+
     let objectCheck = object.name.search("noricebord");
     if (objectCheck !== -1) {
       return;
@@ -684,17 +678,21 @@ export class Viewer extends React.Component<IProps, IState> {
         //@ts-ignore
         if (this.intersected && !isMobile()) {
           //@ts-ignore
-          this.intersected.material.color.setHex(this.intersected.currentHex);
+          // this.intersected.material.color.setHex(this.intersected.currentHex);
         }
 
         this.intersected = object as Mesh & { currentHex: number };
 
         if (!isMobile()) {
-          //@ts-ignore
-          const material = object.material as MeshBasicMaterial;
-          //@ts-ignore
-          this.intersected.currentHex = material.color.getHex();
-          material.color.setHex(0x0045a6);
+          const selectedObject = object;
+          this.addSelectedObject(selectedObject);
+          this.outlinePass.selectedObjects = this.selectedObjects;
+
+          // //@ts-ignore
+          // const material = object.material as MeshBasicMaterial;
+          // //@ts-ignore
+          // this.intersected.currentHex = material.color.getHex();
+          // material.color.setHex(0x0045a6);
         }
       }
       return;
@@ -704,7 +702,7 @@ export class Viewer extends React.Component<IProps, IState> {
     if (this.intersected !== parrentNode) {
       if (!isMobile() && this.intersected) {
         //@ts-ignore
-        this.intersected.material.color.setHex(this.intersected.currentHex);
+        //this.intersected.material.color.setHex(this.intersected.currentHex);
       }
 
       this.intersected = parrentNode.children[1] as Mesh & {
@@ -713,10 +711,19 @@ export class Viewer extends React.Component<IProps, IState> {
       this.intersected.name = parrentNode.name;
 
       if (!isMobile()) {
-        this.oldMaterial = (this.intersected.material as Material).clone();
-        this.intersected.material = new MeshBasicMaterial({ color: 0xffffff });
+        // this.oldMaterial = (this.intersected.material as Material).clone();
+        // this.intersected.material = new MeshBasicMaterial({ color: 0xffffff });
+
+        const selectedObject = this.intersected;
+        this.addSelectedObject(selectedObject);
+        this.outlinePass.selectedObjects = this.selectedObjects;
       }
     }
+  }
+
+  addSelectedObject(object: Object3D) {
+    this.selectedObjects = [];
+    this.selectedObjects.push(object);
   }
 
   intersect() {
@@ -728,12 +735,8 @@ export class Viewer extends React.Component<IProps, IState> {
     if (intersects.length > 0) {
       this.actOnIntersection(intersects[0].object);
     } else {
-      if (this.intersected) {
-        //@ts-ignore
-        this.intersected.material = this.oldMaterial;
+        this.outlinePass.selectedObjects = [];      
         this.intersected = undefined;
-        // (logoHolder.scene.children[0] as Mesh).material = new MeshBasicMaterial({ color: 0xF0F0F0 });
-      }
     }
   }
 
@@ -742,8 +745,7 @@ export class Viewer extends React.Component<IProps, IState> {
     this.controls.update();
     this.intersect();
     TWEEN.update();
-    this.renderer.render(this.scene, this.camera);
-    // this.state.isNight?  this.composer.render() :
+    this.composer.render();
   }
 
   render() {
