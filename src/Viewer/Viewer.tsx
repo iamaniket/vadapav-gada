@@ -402,7 +402,7 @@ export class Viewer extends React.Component<IProps, IState> {
 
     // add QR code
     const qr = (await loadModel(assetUrl + "model/qr.glb")) as { scene: Scene };
-    qr.scene.name = "payment"
+    qr.scene.name = "PAYMENT"
     qr.scene.castShadow = true;
     phone.scene.receiveShadow = true;
     // qr.scene.rotateX(Math.PI / 2);
@@ -528,6 +528,12 @@ export class Viewer extends React.Component<IProps, IState> {
       this.intersect();
       if (this.intersected) {
         switch (this.intersected.name) {
+          case "PAYMENT":
+            mixpanel.track("Credits", {});
+            new TWEEN.Tween(this.camera.position)
+            .to({ x: 896, y: 504, z: 16 }, 1000)
+            .start();
+            break;
           case "CREDITS":
             mixpanel.track("Credits", {});
             //@ts-ignore
@@ -659,8 +665,6 @@ export class Viewer extends React.Component<IProps, IState> {
 
   actOnIntersection(object: Object3D, isClick = false) {
 
-    console.log(object.name)
-
     let objectCheck = object.name.search("noricebord");
     if (objectCheck !== -1) {
       return;
@@ -675,11 +679,6 @@ export class Viewer extends React.Component<IProps, IState> {
 
     if (objectCheck > -1) {
       if (this.intersected !== object) {
-        //@ts-ignore
-        if (this.intersected && !isMobile()) {
-          //@ts-ignore
-          // this.intersected.material.color.setHex(this.intersected.currentHex);
-        }
 
         this.intersected = object as Mesh & { currentHex: number };
 
@@ -687,12 +686,6 @@ export class Viewer extends React.Component<IProps, IState> {
           const selectedObject = object;
           this.addSelectedObject(selectedObject);
           this.outlinePass.selectedObjects = this.selectedObjects;
-
-          // //@ts-ignore
-          // const material = object.material as MeshBasicMaterial;
-          // //@ts-ignore
-          // this.intersected.currentHex = material.color.getHex();
-          // material.color.setHex(0x0045a6);
         }
       }
       return;
@@ -700,10 +693,6 @@ export class Viewer extends React.Component<IProps, IState> {
 
     const parrentNode = this.getParentRecrcive(object) as Mesh;
     if (this.intersected !== parrentNode) {
-      if (!isMobile() && this.intersected) {
-        //@ts-ignore
-        //this.intersected.material.color.setHex(this.intersected.currentHex);
-      }
 
       this.intersected = parrentNode.children[1] as Mesh & {
         currentHex: number;
@@ -711,9 +700,6 @@ export class Viewer extends React.Component<IProps, IState> {
       this.intersected.name = parrentNode.name;
 
       if (!isMobile()) {
-        // this.oldMaterial = (this.intersected.material as Material).clone();
-        // this.intersected.material = new MeshBasicMaterial({ color: 0xffffff });
-
         const selectedObject = this.intersected;
         this.addSelectedObject(selectedObject);
         this.outlinePass.selectedObjects = this.selectedObjects;
