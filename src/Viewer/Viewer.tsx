@@ -54,8 +54,6 @@ import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 import { FXAAShader } from "three/examples/jsm/shaders/FXAAShader.js";
 import { OutputPass } from "../lib/OutputPass.js";
 
-// @ts-ignore gui
-import GUI from "lil-gui";
 
 mixpanel.init("af44aaa9f572d564af1baf30ee1b6b28", { debug: true });
 
@@ -63,8 +61,7 @@ mixpanel.track("Website Visit", {
   source: isMobile() ? "Mobile" : "Personal Computer",
 });
 
-const assetUrl = "";
-// "https://raw.githubusercontent.com/iamaniket/vadapav-gada/main/public/";
+const assetUrl = "https://raw.githubusercontent.com/iamaniket/vadapav-gada/main/public/";
 
 interface IProps {}
 
@@ -452,17 +449,20 @@ export class Viewer extends React.Component<IProps, IState> {
 
     const gl = document.createElement("canvas").getContext("webgl2");
 
-    let target;
-    if (gl) {
-      target = new WebGLRenderTarget(window.innerWidth, window.innerHeight, {
-        format: RGBAFormat,
-        encoding: sRGBEncoding,
-      });
-      target.samples = 8;
-      this.composer = new EffectComposer(this.renderer, target);
-    } else {
-      this.composer = new EffectComposer(this.renderer);
-    }
+    // let target;
+    // if (gl) {
+    //   target = new WebGLRenderTarget(window.innerWidth, window.innerHeight, {
+    //     format: RGBAFormat,
+    //     encoding: sRGBEncoding,
+    //   });
+    //   target.samples = 8;
+    //   this.composer = new EffectComposer(this.renderer, target);
+    // } else {
+    //   
+    // }
+
+    this.composer = new EffectComposer(this.renderer);
+    this.composer.setPixelRatio(window.devicePixelRatio);
 
     this.composer.addPass(renderScene);
     // this.composer.addPass( outputPass );
@@ -529,7 +529,7 @@ export class Viewer extends React.Component<IProps, IState> {
       if (this.intersected) {
         switch (this.intersected.name) {
           case "PAYMENT":
-            mixpanel.track("Credits", {});
+            mixpanel.track("Payment", {});
             new TWEEN.Tween(this.camera.position)
             .to({ x: 896, y: 504, z: 16 }, 1000)
             .start();
@@ -732,6 +732,7 @@ export class Viewer extends React.Component<IProps, IState> {
     this.intersect();
     TWEEN.update();
     this.composer.render();
+    this.scene.rotateOnAxis(new Vector3(0,1,0), 0.001);
   }
 
   render() {
@@ -757,7 +758,7 @@ export class Viewer extends React.Component<IProps, IState> {
           }}
         >
           <img
-            src={this.state.isNight ? "day.png" : "night.png"}
+            src={this.state.isNight ? "day.png" : "night.png"}            
             className="icon"
             alt=""
           />

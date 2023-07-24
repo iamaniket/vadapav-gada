@@ -71,13 +71,15 @@ code {
 
 .float{
 	position:fixed;
+  width:60px;
 	height:60px;
-	bottom:40px;
-	right:40px;
+	bottom:20px;
+	right:20px;
 	border-radius:60px;
 	text-align:center;
   border-color: transparent;
   background: transparent;
+  box-shadow: 0px 0 5px 4px #5d5d5d;
 }
 
 .my-float{
@@ -85,6 +87,6 @@ code {
 }
 
 .icon{
-  width:100%;
-	height:100%;
+	width:100%;
+  aspect-ratio: 1;
 }
