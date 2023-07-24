@@ -14,8 +14,9 @@ body {
   border-top: 16px solid #3498db;
   width: 120px;
   height: 120px;
-  -webkit-animation: spin 2s linear infinite; /* Safari */
-  animation: spin 2s linear infinite;  
+  -webkit-animation: spin 2s linear infinite;
+  /* Safari */
+  animation: spin 2s linear infinite;
   position: absolute;
   top: 0;
   left: 0px;
@@ -24,7 +25,7 @@ body {
   right: 0px;
 }
 
-.vadapaav-thumb{
+.vadapaav-thumb {
   background: #100d0a;
   position: absolute;
   left: 0px;
@@ -33,7 +34,7 @@ body {
   right: 0px;
 }
 
-.background{
+.background {
   background-color: rgb(16, 13, 10);
   left: 0px;
   right: 0px;
@@ -43,7 +44,7 @@ body {
 }
 
 
-.loader-holder{
+.loader-holder {
   position: absolute;
   top: 0;
   left: 0px;
@@ -54,13 +55,23 @@ body {
 
 /* Safari */
 @-webkit-keyframes spin {
-  0% { -webkit-transform: rotate(0deg); }
-  100% { -webkit-transform: rotate(360deg); }
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 code {
@@ -69,24 +80,26 @@ code {
 }
 
 
-.float{
-	position:fixed;
-  width:60px;
-	height:60px;
-	bottom:20px;
-	right:20px;
-	border-radius:60px;
-	text-align:center;
+.float {
+  position: fixed;
+  width: 50px;
+  height: 50px;
+  bottom: 25px;
+  right: 25px;
+  border-radius: 60px;
+  text-align: center;
   border-color: transparent;
-  background: transparent;
+  background-size: contain;
   box-shadow: 0px 0 5px 4px #5d5d5d;
+  background-color: rgb(0, 0, 0);
+  background-repeat: no-repeat;
 }
 
-.my-float{
-	margin-top:22px;
+.my-float {
+  margin-top: 22px;
 }
 
-.icon{
-	width:100%;
+.icon {
+  width: 100%;
   aspect-ratio: 1;
 }

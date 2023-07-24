@@ -54,14 +54,14 @@ import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 import { FXAAShader } from "three/examples/jsm/shaders/FXAAShader.js";
 import { OutputPass } from "../lib/OutputPass.js";
 
-
 mixpanel.init("af44aaa9f572d564af1baf30ee1b6b28", { debug: true });
 
 mixpanel.track("Website Visit", {
   source: isMobile() ? "Mobile" : "Personal Computer",
 });
 
-const assetUrl = "https://raw.githubusercontent.com/iamaniket/vadapav-gada/main/public/";
+const assetUrl =
+  "https://raw.githubusercontent.com/iamaniket/vadapav-gada/main/public/";
 
 interface IProps {}
 
@@ -399,11 +399,11 @@ export class Viewer extends React.Component<IProps, IState> {
 
     // add QR code
     const qr = (await loadModel(assetUrl + "model/qr.glb")) as { scene: Scene };
-    qr.scene.name = "PAYMENT"
+    qr.scene.name = "PAYMENT";
     qr.scene.castShadow = true;
     phone.scene.receiveShadow = true;
     // qr.scene.rotateX(Math.PI / 2);
-   // qr.scene.rotateY(Math.PI - Math.PI / 10);
+    // qr.scene.rotateY(Math.PI - Math.PI / 10);
     qr.scene.scale.copy(new Vector3(6, 6, 6));
     qr.scene.position.copy(this.qrPosition);
     this.scene.add(qr.scene);
@@ -449,19 +449,18 @@ export class Viewer extends React.Component<IProps, IState> {
 
     const gl = document.createElement("canvas").getContext("webgl2");
 
-    // let target;
-    // if (gl) {
-    //   target = new WebGLRenderTarget(window.innerWidth, window.innerHeight, {
-    //     format: RGBAFormat,
-    //     encoding: sRGBEncoding,
-    //   });
-    //   target.samples = 8;
-    //   this.composer = new EffectComposer(this.renderer, target);
-    // } else {
-    //   
-    // }
+    let target;
+    if (gl) {
+      target = new WebGLRenderTarget(window.innerWidth, window.innerHeight, {
+        format: RGBAFormat,
+        encoding: sRGBEncoding,
+      });
+      target.samples = 8;
+      this.composer = new EffectComposer(this.renderer, target);
+    } else {
+      this.composer = new EffectComposer(this.renderer);
+    }
 
-    this.composer = new EffectComposer(this.renderer);
     this.composer.setPixelRatio(window.devicePixelRatio);
 
     this.composer.addPass(renderScene);
@@ -531,8 +530,8 @@ export class Viewer extends React.Component<IProps, IState> {
           case "PAYMENT":
             mixpanel.track("Payment", {});
             new TWEEN.Tween(this.camera.position)
-            .to({ x: 896, y: 504, z: 16 }, 1000)
-            .start();
+              .to({ x: 896, y: 504, z: 16 }, 1000)
+              .start();
             break;
           case "CREDITS":
             mixpanel.track("Credits", {});
@@ -664,7 +663,6 @@ export class Viewer extends React.Component<IProps, IState> {
   }
 
   actOnIntersection(object: Object3D, isClick = false) {
-
     let objectCheck = object.name.search("noricebord");
     if (objectCheck !== -1) {
       return;
@@ -679,7 +677,6 @@ export class Viewer extends React.Component<IProps, IState> {
 
     if (objectCheck > -1) {
       if (this.intersected !== object) {
-
         this.intersected = object as Mesh & { currentHex: number };
 
         if (!isMobile()) {
@@ -693,7 +690,6 @@ export class Viewer extends React.Component<IProps, IState> {
 
     const parrentNode = this.getParentRecrcive(object) as Mesh;
     if (this.intersected !== parrentNode) {
-
       this.intersected = parrentNode.children[1] as Mesh & {
         currentHex: number;
       };
@@ -721,8 +717,8 @@ export class Viewer extends React.Component<IProps, IState> {
     if (intersects.length > 0) {
       this.actOnIntersection(intersects[0].object);
     } else {
-        this.outlinePass.selectedObjects = [];      
-        this.intersected = undefined;
+      this.outlinePass.selectedObjects = [];
+      this.intersected = undefined;
     }
   }
 
@@ -732,7 +728,7 @@ export class Viewer extends React.Component<IProps, IState> {
     this.intersect();
     TWEEN.update();
     this.composer.render();
-    this.scene.rotateOnAxis(new Vector3(0,1,0), 0.001);
+    this.scene.rotateOnAxis(new Vector3(0, 1, 0), 0.001);
   }
 
   render() {
@@ -741,6 +737,11 @@ export class Viewer extends React.Component<IProps, IState> {
         <canvas id="viewer-3d" />
         <button
           className="float"
+          style={{
+            backgroundImage: this.state.isNight
+              ? "url(https://aniketwachakawade.com/day.png)"
+              : "url(https://aniketwachakawade.com/night.png)",
+          }}
           onClick={() => {
             mixpanel.track("mode toggle", {});
             this.setState(
@@ -756,13 +757,7 @@ export class Viewer extends React.Component<IProps, IState> {
               }
             );
           }}
-        >
-          <img
-            src={this.state.isNight ? "day.png" : "night.png"}            
-            className="icon"
-            alt=""
-          />
-        </button>
+        ></button>
       </>
     );
   }
