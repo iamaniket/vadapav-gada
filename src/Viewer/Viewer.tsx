@@ -14,6 +14,7 @@ import {
   DoubleSide,
   Group,
   Material,
+  MathUtils,
   Mesh,
   MeshBasicMaterial,
   MeshLambertMaterial,
@@ -52,6 +53,7 @@ import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
 import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 import { FXAAShader } from "three/examples/jsm/shaders/FXAAShader.js";
+import { GlitchPass } from "../lib/GlitchPass.js";
 import { OutputPass } from "../lib/OutputPass.js";
 
 mixpanel.init("af44aaa9f572d564af1baf30ee1b6b28", { debug: true });
@@ -89,6 +91,7 @@ export class Viewer extends React.Component<IProps, IState> {
   composer!: EffectComposer;
   effectFXAA!: ShaderPass;
   outlinePass!: OutlinePass;
+  glitchPass!: GlitchPass;
   selectedObjects: Array<Object3D> = [];
 
   constructor(props: {}, state: { isNight: boolean }) {
@@ -487,6 +490,9 @@ export class Viewer extends React.Component<IProps, IState> {
     );
     this.composer.addPass(this.effectFXAA);
 
+    this.glitchPass = new GlitchPass();
+    this.composer.addPass(this.glitchPass);
+
     window.addEventListener("resize", this.onWindowResize.bind(this));
     window.addEventListener("pointermove", this.onPointerMove.bind(this));
     window.addEventListener("mousedown", this.onPointerDown.bind(this));
@@ -739,11 +745,13 @@ export class Viewer extends React.Component<IProps, IState> {
           className="float"
           style={{
             backgroundImage: this.state.isNight
-              ? "url(https://aniketwachakawade.com/day.png)"
-              : "url(https://aniketwachakawade.com/night.png)",
+              ? "url(day.png)"
+              : "url(night.png)",
           }}
-          onClick={() => {
+          onClick={async () => {
             mixpanel.track("mode toggle", {});
+            new Audio("glitch-" + MathUtils.randInt(1, 4) + ".mp3").play();
+            await this.glitchPass.generateTrigger();
             this.setState(
               { isNight: this.state.isNight ? false : true },
               () => {
