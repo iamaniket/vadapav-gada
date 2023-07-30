@@ -62,8 +62,7 @@ mixpanel.track("Website Visit", {
   source: isMobile() ? "Mobile" : "Personal Computer",
 });
 
-const assetUrl = "";
-  // "https://raw.githubusercontent.com/iamaniket/vadapav-gada/main/public/";
+const assetUrl = "https://raw.githubusercontent.com/iamaniket/vadapav-gada/main/public/";
 
 interface IProps {}
 
