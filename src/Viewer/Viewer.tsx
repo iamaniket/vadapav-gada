@@ -25,7 +25,6 @@ import {
   PointLight,
   RGBAFormat,
   Raycaster,
-  ReinhardToneMapping,
   RepeatWrapping,
   ShapeGeometry,
   ShapePath,
@@ -33,7 +32,6 @@ import {
   SpotLight,
   TextureLoader,
   Vector2,
-  WebGLRenderTarget,
   sRGBEncoding,
 } from "three";
 import { Box3 } from "three/src/math/Box3";
@@ -53,8 +51,10 @@ import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
 import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 import { FXAAShader } from "three/examples/jsm/shaders/FXAAShader.js";
+
+//@ts-ignore
+import { WebGLRenderTarget } from "../lib/RenderTarget.js";
 import { GlitchPass } from "../lib/GlitchPass.js";
-import { OutputPass } from "../lib/OutputPass.js";
 
 mixpanel.init("af44aaa9f572d564af1baf30ee1b6b28", { debug: true });
 
@@ -62,8 +62,8 @@ mixpanel.track("Website Visit", {
   source: isMobile() ? "Mobile" : "Personal Computer",
 });
 
-const assetUrl =
-  "https://raw.githubusercontent.com/iamaniket/vadapav-gada/main/public/";
+const assetUrl = "";
+  // "https://raw.githubusercontent.com/iamaniket/vadapav-gada/main/public/";
 
 interface IProps {}
 
@@ -210,7 +210,7 @@ export class Viewer extends React.Component<IProps, IState> {
   streetLight(lightHolder: Object3D) {
     const sphere = new BoxGeometry(85, 15, 70);
     const light1 = new PointLight(0xeb7f11, 4);
-    light1.add(new Mesh(sphere, new MeshBasicMaterial({ color: 0xeb7f00 })));
+    light1.add(new Mesh(sphere, new MeshBasicMaterial({ color: 0xFFFF00 })));
     light1.position.set(-95, 1625, -586);
     lightHolder.add(light1);
   }
@@ -270,7 +270,7 @@ export class Viewer extends React.Component<IProps, IState> {
     scene.add(linkedinLogo);
   }
 
-  async addLogo(scene: Scene, path: string) {
+  async addLogo(scene: Scene, path: string, scale ? : Vector3, postion? : Vector3) {
     const box = new Box3();
     box.setFromObject(scene);
     let center = new Vector3();
@@ -280,8 +280,8 @@ export class Viewer extends React.Component<IProps, IState> {
     const modelLogo = this.createLogoFromPath(model.paths, scene.position);
 
     modelLogo.rotateX(Math.PI / 2);
-    modelLogo.scale.copy(new Vector3(0.071, 0.071, 0.071));
-    modelLogo.position.copy(new Vector3(-0.85, 0.2, -0.85));
+    modelLogo.scale.copy(scale? scale : new Vector3(0.071, 0.071, 0.071));
+    modelLogo.position.copy(postion? postion : new Vector3(-0.85, 0.2, -0.85));
 
     scene.add(modelLogo);
   }
@@ -332,9 +332,9 @@ export class Viewer extends React.Component<IProps, IState> {
 
     const logoHolder2 = await this.createLogoHolder("logoholder");
 
-    logoHolder2.name = "email";
+    logoHolder2.name = "youtube";
     logoHolder2.position.copy(new Vector3(305, 85, 300));
-    await this.addLogo(logoHolder2, assetUrl + "model/email.svg");
+    await this.addLogo(logoHolder2, assetUrl + "model/youtu2.svg", new Vector3(0.0027,0.0027,0.0027), new Vector3(-0.75, 0.2, -0.75));
     this.scene.add(logoHolder2);
     this.selectable.push(logoHolder2);
 
@@ -446,10 +446,6 @@ export class Viewer extends React.Component<IProps, IState> {
     this.controls.maxPolarAngle = Math.PI - (Math.PI * 1.5) / 3.7;
 
     const renderScene = new RenderPass(this.scene, this.camera);
-
-    const outputPass = new OutputPass(ReinhardToneMapping);
-    outputPass.toneMappingExposure = 0.5;
-
     const gl = document.createElement("canvas").getContext("webgl2");
 
     let target;
@@ -481,7 +477,7 @@ export class Viewer extends React.Component<IProps, IState> {
       this.outlinePass.patternTexture = texture;
       texture.wrapS = RepeatWrapping;
       texture.wrapT = RepeatWrapping;
-    });
+    }); 
 
     this.effectFXAA = new ShaderPass(FXAAShader);
     this.effectFXAA.uniforms["resolution"].value.set(
@@ -558,9 +554,6 @@ export class Viewer extends React.Component<IProps, IState> {
               .start();
             mixpanel.track("Location", {});
             break;
-          // case "ABOUT":
-          //   new TWEEN.Tween(this.camera.position).to({x: -783, y: 73, z: -1673}, 1000).start();
-          //  break;
           case "runlola":
             //@ts-ignore
             window
@@ -601,9 +594,15 @@ export class Viewer extends React.Component<IProps, IState> {
             //@ts-ignore
             window.open("https://github.com/iamaniket", "_blank").focus();
             break;
-          case "email":
-            mixpanel.track("Email", {});
-            window.location.href = "mailto:aniketgw47@gmail.com";
+          case "youtube":
+            mixpanel.track("youtube", {});
+                 //@ts-ignore
+            window
+            .open(
+              "https://www.youtube.com/@aniketwachakawade",
+              "_blank"
+            )
+            .focus();
             break;
           case "document":
             mixpanel.track("Resume", {});
@@ -733,8 +732,11 @@ export class Viewer extends React.Component<IProps, IState> {
     this.controls.update();
     this.intersect();
     TWEEN.update();
-    this.composer.render();
-    this.scene.rotateOnAxis(new Vector3(0, 1, 0), 0.001);
+    if (isMobile()) {
+      this.renderer.render(this.scene, this.camera);
+    } else {
+      this.composer.render();
+    }
   }
 
   render() {
@@ -750,8 +752,10 @@ export class Viewer extends React.Component<IProps, IState> {
           }}
           onClick={async () => {
             mixpanel.track("mode toggle", {});
-            new Audio("glitch-" + MathUtils.randInt(1, 4) + ".mp3").play();
-            await this.glitchPass.generateTrigger();
+            if (!isMobile()) {
+              new Audio("glitch-" + MathUtils.randInt(1, 4) + ".mp3").play();
+              await this.glitchPass.generateTrigger();
+            }
             this.setState(
               { isNight: this.state.isNight ? false : true },
               () => {
